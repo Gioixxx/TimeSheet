@@ -2,12 +2,18 @@
   "name": "timesheet",
   "version": "0.1.0",
   "private": true,
+  "description": "Timesheet desktop (Next.js + Electron)",
+  "author": "",
+  "main": "electron/main.cjs",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "postinstall": "prisma generate"
+    "postinstall": "prisma generate",
+    "electron": "electron .",
+    "prepare:standalone": "node scripts/prepare-standalone.mjs",
+    "dist:win": "next build && npm run prepare:standalone && electron-builder --win portable --x64"
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
@@ -30,5 +36,37 @@
     "eslint-config-next": "16.2.2",
     "prisma": "^6.7.0",
     "typescript": "^5"
+  },
+  "build": {
+    "appId": "com.timesheet.app",
+    "productName": "Timesheet",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "electron/**/*",
+      "package.json"
+    ],
+    "npmRebuild": false,
+    "extraResources": [
+      {
+        "from": ".next/standalone",
+        "to": "standalone"
+      },
+      {
+        "from": "prisma",
+        "to": "prisma"
+      }
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "portable",
+          "arch": [
+            "x64"
+          ]
+        }
+      ]
+    }
   }
 }
