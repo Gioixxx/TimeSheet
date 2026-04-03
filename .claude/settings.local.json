@@ -5,7 +5,9 @@
       "Bash(npx prisma:*)",
       "Bash(where fnm:*)",
       "Bash(where nvm:*)",
-      "Bash(npx tsc:*)"
+      "Bash(npx tsc:*)",
+      "Bash(cat /c/Users/Gioix/OneDrive/Desktop/Progetti/timesheet/prisma/migrations/*/migration.sql)",
+      "Bash(grep -r \"GEMINI\\\\|API\" /c/Users/Gioix/OneDrive/Desktop/Progetti/timesheet/.env*)"
     ]
   }
 }

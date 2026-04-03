@@ -1,0 +1,16 @@
+services:
+  timesheet:
+    build: .
+    container_name: timesheet
+    ports:
+      - "3000:3000"
+    environment:
+      DATABASE_URL: file:/data/timesheet.db
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      GEMINI_MODEL: ${GEMINI_MODEL:-gemini-2.5-flash}
+    volumes:
+      - timesheet-data:/data
+    restart: unless-stopped
+
+volumes:
+  timesheet-data:
