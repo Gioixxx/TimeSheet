@@ -1,5 +1,6 @@
 import { List, User, Briefcase, Calendar, Wrench, HeadphonesIcon } from 'lucide-react'
 import DeleteButton from './DeleteButton'
+import EditButton from './EditButton'
 import MonthExportControls from './MonthExportControls'
 import Pagination from './Pagination'
 import styles from './TimeEntryList.module.css'
@@ -84,6 +85,19 @@ export default function TimeEntryList({
                       {label}
                     </span>
                     <span className={styles.duration}>{formatDuration(entry.duration)}</span>
+                    <EditButton
+                      entry={{
+                        id: entry.id,
+                        title: entry.title,
+                        description: entry.description,
+                        activityType: entry.activityType,
+                        duration: entry.duration,
+                        date: entry.date,
+                        clientName: entry.client?.name ?? null,
+                        projectName: entry.project?.name ?? null,
+                        tags: entry.tags.map((t) => t.name),
+                      }}
+                    />
                     <DeleteButton id={entry.id} />
                   </div>
                 </div>

@@ -13,6 +13,30 @@
 .header {
   margin-bottom: 12px;
   flex-shrink: 0;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.calLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text-muted);
+  font-size: 0.78rem;
+  font-weight: 500;
+  padding: 5px 10px;
+  transition: color 0.15s, border-color 0.15s, background 0.15s;
+  white-space: nowrap;
+}
+
+.calLink:hover {
+  color: var(--primary-hover);
+  border-color: rgba(99, 102, 241, 0.35);
+  background: var(--primary-glow);
 }
 
 .title {

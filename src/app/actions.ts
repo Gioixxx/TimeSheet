@@ -8,9 +8,7 @@ import {
   type ParseNlResult,
 } from '@/lib/parse-nl-time-entry'
 
-export async function createTimeEntry(raw: unknown) {
-  const data = timeEntrySchema.parse(raw)
-
+async function resolveRelations(data: ReturnType<typeof timeEntrySchema.parse>) {
   let clientId: string | undefined
   if (data.clientName?.trim()) {
     const client = await prisma.client.upsert({
@@ -41,13 +39,16 @@ export async function createTimeEntry(raw: unknown) {
 
   const tagRecords = await Promise.all(
     tagNames.map((name) =>
-      prisma.tag.upsert({
-        where: { name },
-        update: {},
-        create: { name },
-      })
+      prisma.tag.upsert({ where: { name }, update: {}, create: { name } })
     )
   )
+
+  return { clientId, projectId, tagRecords }
+}
+
+export async function createTimeEntry(raw: unknown) {
+  const data = timeEntrySchema.parse(raw)
+  const { clientId, projectId, tagRecords } = await resolveRelations(data)
 
   await prisma.timeEntry.create({
     data: {
@@ -59,6 +60,27 @@ export async function createTimeEntry(raw: unknown) {
       clientId: clientId ?? null,
       projectId: projectId ?? null,
       tags: { connect: tagRecords.map((t) => ({ id: t.id })) },
+    },
+  })
+
+  revalidatePath('/')
+}
+
+export async function updateTimeEntry(id: string, raw: unknown) {
+  const data = timeEntrySchema.parse(raw)
+  const { clientId, projectId, tagRecords } = await resolveRelations(data)
+
+  await prisma.timeEntry.update({
+    where: { id },
+    data: {
+      title: data.title,
+      description: data.description,
+      activityType: data.activityType,
+      duration: data.duration,
+      date: new Date(data.date),
+      clientId: clientId ?? null,
+      projectId: projectId ?? null,
+      tags: { set: tagRecords.map((t) => ({ id: t.id })) },
     },
   })
 

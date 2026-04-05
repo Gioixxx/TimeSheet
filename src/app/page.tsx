@@ -1,6 +1,10 @@
 import { prisma } from '@/lib/prisma'
+import { Suspense } from 'react'
+import Link from 'next/link'
+import { CalendarDays } from 'lucide-react'
 import TimeEntryForm from '@/components/TimeEntryForm'
 import TimeEntryList from '@/components/TimeEntryList'
+import FilterBar from '@/components/FilterBar'
 import styles from './page.module.css'
 
 const ITEMS_PER_PAGE = 5
@@ -28,14 +32,38 @@ async function getStats() {
   }
 }
 
-async function getData(page: number) {
-  const [entries, clients, projects, tags] = await Promise.all([
+type Filters = {
+  month?: string
+  type?: string
+  client?: string
+}
+
+async function getData(page: number, filters: Filters) {
+  const where: Parameters<typeof prisma.timeEntry.findMany>[0]['where'] = {}
+
+  if (filters.month) {
+    const [y, m] = filters.month.split('-').map(Number)
+    where.date = {
+      gte: new Date(Date.UTC(y, m - 1, 1)),
+      lt: new Date(Date.UTC(y, m, 1)),
+    }
+  }
+  if (filters.type === 'SUPPORTO' || filters.type === 'MANUTENZIONE') {
+    where.activityType = filters.type
+  }
+  if (filters.client) {
+    where.client = { name: filters.client }
+  }
+
+  const [entries, total, clients, projects, tags] = await Promise.all([
     prisma.timeEntry.findMany({
       take: ITEMS_PER_PAGE,
       skip: (page - 1) * ITEMS_PER_PAGE,
+      where,
       include: { client: true, project: true, tags: true },
       orderBy: { date: 'desc' },
     }),
+    prisma.timeEntry.count({ where }),
     prisma.client.findMany({
       take: SUGGESTIONS_LIMIT,
       orderBy: { entries: { _count: 'desc' } },
@@ -49,7 +77,7 @@ async function getData(page: number) {
       orderBy: { entries: { _count: 'desc' } },
     }),
   ])
-  return { entries, clients, projects, tags }
+  return { entries, total, clients, projects, tags }
 }
 
 export default async function Home({
@@ -59,26 +87,37 @@ export default async function Home({
 }) {
   const params = await searchParams
   const page = Number(params?.page) || 1
+  const filters: Filters = {
+    month: typeof params.month === 'string' ? params.month : undefined,
+    type: typeof params.type === 'string' ? params.type : undefined,
+    client: typeof params.client === 'string' ? params.client : undefined,
+  }
 
   const [data, stats] = await Promise.all([
-    getData(page),
-    getStats()
+    getData(page, filters),
+    getStats(),
   ])
 
-  const { entries, clients, projects, tags } = data
+  const { entries, total, clients, projects, tags } = data
   const { totalMin, weekMin, totalCount } = stats
 
   const totalHours = (totalMin / 60).toFixed(1)
   const weekHours = (weekMin / 60).toFixed(1)
-  const totalPages = Math.ceil(totalCount / ITEMS_PER_PAGE)
+  const totalPages = Math.ceil(total / ITEMS_PER_PAGE)
 
   return (
     <div className={styles.page}>
       <header className={styles.header}>
-        <h1 className={styles.title}>
-          Time<span className={styles.titleAccent}>sheet</span>
-        </h1>
-        <p className={styles.subtitle}>Traccia il tuo tempo, locally.</p>
+        <div>
+          <h1 className={styles.title}>
+            Time<span className={styles.titleAccent}>sheet</span>
+          </h1>
+          <p className={styles.subtitle}>Traccia il tuo tempo, locally.</p>
+        </div>
+        <Link href="/calendario" className={styles.calLink}>
+          <CalendarDays size={15} />
+          Calendario
+        </Link>
       </header>
 
       <div className={styles.stats}>
@@ -111,11 +150,14 @@ export default async function Home({
           <TimeEntryForm clients={clients} projects={projects} tags={tags} />
         </div>
         <div className={styles.listColumn}>
+          <Suspense>
+            <FilterBar clients={clients} />
+          </Suspense>
           <TimeEntryList
             entries={entries}
             currentPage={page}
             totalPages={totalPages}
-            totalCount={totalCount}
+            totalCount={total}
           />
         </div>
       </div>
