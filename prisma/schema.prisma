@@ -55,3 +55,13 @@ model TimeEntry {
   @@index([clientId])
   @@index([projectId])
 }
+
+model Task {
+  id               String   @id @default(cuid())
+  title            String
+  notes            String?
+  clientName       String?
+  projectName      String?
+  estimatedMinutes Int?
+  createdAt        DateTime @default(now())
+}

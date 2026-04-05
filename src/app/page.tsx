@@ -5,6 +5,7 @@ import { CalendarDays } from 'lucide-react'
 import TimeEntryForm from '@/components/TimeEntryForm'
 import TimeEntryList from '@/components/TimeEntryList'
 import FilterBar from '@/components/FilterBar'
+import TaskBoard from '@/components/TaskBoard'
 import styles from './page.module.css'
 
 const ITEMS_PER_PAGE = 5
@@ -150,6 +151,7 @@ export default async function Home({
           <TimeEntryForm clients={clients} projects={projects} tags={tags} />
         </div>
         <div className={styles.listColumn}>
+          <TaskBoard />
           <Suspense>
             <FilterBar clients={clients} />
           </Suspense>
