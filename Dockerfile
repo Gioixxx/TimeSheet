@@ -34,4 +34,4 @@ COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
 COPY --from=builder /app/node_modules/@prisma/client ./node_modules/@prisma/client
 
 EXPOSE 3000
-ENTRYPOINT ["sh", "-c", "mkdir -p /data && cd /app && prisma migrate deploy && exec node server.js"]
+ENTRYPOINT ["sh", "-c", "mkdir -p /data && cd /app && prisma migrate deploy || { echo 'Prisma migration failed'; exit 1; } && exec node server.js"]

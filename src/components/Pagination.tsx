@@ -5,11 +5,18 @@ import styles from './Pagination.module.css'
 export default function Pagination({
   currentPage,
   totalPages,
+  totalCount,
+  itemsPerPage,
 }: {
   currentPage: number
   totalPages: number
+  totalCount: number
+  itemsPerPage: number
 }) {
   if (totalPages <= 1) return null
+
+  const from = (currentPage - 1) * itemsPerPage + 1
+  const to = Math.min(currentPage * itemsPerPage, totalCount)
 
   return (
     <div className={styles.pagination}>
@@ -26,6 +33,7 @@ export default function Pagination({
       <div className={styles.pageInfo}>
         <span className={styles.pageNumber}>{currentPage}</span>
         <span className={styles.pageTotal}>di {totalPages}</span>
+        <span className={styles.pageCount}>({from}–{to} di {totalCount})</span>
       </div>
 
       <Link

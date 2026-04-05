@@ -4,6 +4,7 @@ import TimeEntryList from '@/components/TimeEntryList'
 import styles from './page.module.css'
 
 const ITEMS_PER_PAGE = 5
+const SUGGESTIONS_LIMIT = 20
 
 async function getStats() {
   const now = new Date()
@@ -36,12 +37,15 @@ async function getData(page: number) {
       orderBy: { date: 'desc' },
     }),
     prisma.client.findMany({
+      take: SUGGESTIONS_LIMIT,
       orderBy: { entries: { _count: 'desc' } },
     }),
     prisma.project.findMany({
+      take: SUGGESTIONS_LIMIT,
       orderBy: { entries: { _count: 'desc' } },
     }),
     prisma.tag.findMany({
+      take: SUGGESTIONS_LIMIT,
       orderBy: { entries: { _count: 'desc' } },
     }),
   ])
@@ -60,7 +64,7 @@ export default async function Home({
     getData(page),
     getStats()
   ])
-  
+
   const { entries, clients, projects, tags } = data
   const { totalMin, weekMin, totalCount } = stats
 
@@ -107,7 +111,12 @@ export default async function Home({
           <TimeEntryForm clients={clients} projects={projects} tags={tags} />
         </div>
         <div className={styles.listColumn}>
-          <TimeEntryList entries={entries as any} currentPage={page} totalPages={totalPages} />
+          <TimeEntryList
+            entries={entries}
+            currentPage={page}
+            totalPages={totalPages}
+            totalCount={totalCount}
+          />
         </div>
       </div>
     </div>

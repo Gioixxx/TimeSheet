@@ -4,6 +4,8 @@ import MonthExportControls from './MonthExportControls'
 import Pagination from './Pagination'
 import styles from './TimeEntryList.module.css'
 
+const ITEMS_PER_PAGE = 5
+
 type Tag = { id: string; name: string }
 type Client = { id: string; name: string }
 type Project = { id: string; name: string }
@@ -42,14 +44,16 @@ function formatDate(date: Date): string {
   }).format(new Date(date))
 }
 
-export default function TimeEntryList({ 
-  entries, 
-  currentPage, 
-  totalPages 
-}: { 
+export default function TimeEntryList({
+  entries,
+  currentPage,
+  totalPages,
+  totalCount,
+}: {
   entries: Entry[]
   currentPage: number
   totalPages: number
+  totalCount: number
 }) {
   return (
     <div>
@@ -60,7 +64,7 @@ export default function TimeEntryList({
         </h2>
         <div className={styles.headerActions}>
           <MonthExportControls />
-          <span className={styles.count}>{entries.length} voc{entries.length === 1 ? 'e' : 'i'}</span>
+          <span className={styles.count}>{totalCount} voc{totalCount === 1 ? 'e' : 'i'}</span>
         </div>
       </div>
 
@@ -125,9 +129,14 @@ export default function TimeEntryList({
           })}
         </ul>
       )}
-      
+
       {totalPages > 1 && (
-        <Pagination currentPage={currentPage} totalPages={totalPages} />
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          totalCount={totalCount}
+          itemsPerPage={ITEMS_PER_PAGE}
+        />
       )}
     </div>
   )
