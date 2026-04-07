@@ -103,7 +103,7 @@ export async function pollEmails(): Promise<PollResult> {
           })
 
           // Parse source to extract plain text and html parts
-          const source = fullMsg?.source?.toString('utf-8') ?? ''
+          const source = fullMsg && fullMsg.source ? fullMsg.source.toString('utf-8') : ''
 
           // Extract text from email source: look for plain text content
           // We use a simple extraction from the raw email source
