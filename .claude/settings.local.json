@@ -12,7 +12,8 @@
       "Bash(DATABASE_URL=\"file:./timesheet.db\" npx prisma migrate dev --name add-task)",
       "Bash(grep -E \"\\\\.tsx?$\")",
       "Bash(grep -E \"\\\\.ts$\")",
-      "Bash(DATABASE_URL=\"file:./timesheet.db\" npx prisma migrate dev --name add-processed-email)"
+      "Bash(DATABASE_URL=\"file:./timesheet.db\" npx prisma migrate dev --name add-processed-email)",
+      "Bash(npm i:*)"
     ]
   }
 }
