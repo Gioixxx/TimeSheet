@@ -158,6 +158,14 @@ export async function logTaskAsEntry(
   revalidatePath('/')
 }
 
+// ── Email polling ────────────────────────────────────────────────────────────
+
+import { pollEmails, type PollResult } from '@/lib/email-poller'
+
+export async function triggerEmailPoll(): Promise<PollResult> {
+  return pollEmails()
+}
+
 // ── AI parsing ───────────────────────────────────────────────────────────────
 
 export async function parseNaturalLanguageTimeEntry(text: string): Promise<ParseNlResult> {

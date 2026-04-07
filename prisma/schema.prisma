@@ -67,3 +67,13 @@ model Task {
   estimatedMinutes Int?
   createdAt        DateTime @default(now())
 }
+
+model ProcessedEmail {
+  id          String   @id @default(cuid())
+  messageId   String   @unique
+  subject     String   @default("")
+  fromAddress String   @default("")
+  processedAt DateTime @default(now())
+  entryId     String?
+  error       String?
+}

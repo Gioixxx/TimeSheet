@@ -180,7 +180,23 @@ app.whenReady().then(() => {
   });
 
   waitForServer(port)
-    .then(() => createWindow(port))
+    .then(() => {
+      createWindow(port);
+
+      // Email polling: avvio immediato + ogni 5 minuti
+      const emailPollUrl = `http://127.0.0.1:${port}/api/email-poll`;
+      const pollEmail = () =>
+        fetch(emailPollUrl, { method: "POST" })
+          .then((r) => r.json())
+          .then((res) => {
+            if (res.created > 0) {
+              console.log(`[email-poll] ${res.created} voci create, ${res.failed} fallite, ${res.skipped} saltate`);
+            }
+          })
+          .catch(() => {});
+      pollEmail();
+      setInterval(pollEmail, 5 * 60 * 1000);
+    })
     .catch((err) => {
       console.error(err);
       app.quit();
