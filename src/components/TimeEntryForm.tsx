@@ -2,7 +2,7 @@
 
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useTransition, useRef, useState, useMemo, useCallback } from 'react'
+import { useTransition, useRef, useState, useMemo, useCallback, useEffect } from 'react'
 import { Plus, Mic, MicOff, Clock, Sparkles } from 'lucide-react'
 import { timeEntrySchema, type TimeEntryInput } from '@/lib/schemas'
 import { createTimeEntry, parseNaturalLanguageTimeEntry } from '@/app/actions'
@@ -63,6 +63,10 @@ export default function TimeEntryForm({ clients, projects, tags }: Props) {
   const recognitionRef = useRef<AnyRecognition | null>(null)
   const nlRecognitionRef = useRef<AnyRecognition | null>(null)
 
+  const [ore, setOre] = useState(1)
+  const [minuti, setMinuti] = useState(0)
+  const [giorni, setGiorni] = useState(1)
+
   const today = new Date().toISOString().split('T')[0]
 
   const {
@@ -77,6 +81,14 @@ export default function TimeEntryForm({ clients, projects, tags }: Props) {
     resolver: zodResolver(timeEntrySchema),
     defaultValues: { date: today, duration: 60, activityType: 'SUPPORTO' },
   })
+
+  const activityType = watch('activityType')
+  const isFerie = activityType === 'FERIE'
+
+  useEffect(() => {
+    const computed = isFerie ? Math.max(1, Math.round(giorni * 480)) : Math.max(1, ore * 60 + minuti)
+    setValue('duration', computed)
+  }, [ore, minuti, giorni, isFerie, setValue])
 
   const clientNameValue = watch('clientName')?.trim() ?? ''
 
@@ -127,6 +139,7 @@ export default function TimeEntryForm({ clients, projects, tags }: Props) {
     startTransition(async () => {
       await createTimeEntry(data)
       reset({ date: today, duration: 60, activityType: 'SUPPORTO' })
+      setOre(1); setMinuti(0); setGiorni(1)
     })
   }
 
@@ -139,6 +152,12 @@ export default function TimeEntryForm({ clients, projects, tags }: Props) {
     setValue('clientName', data.clientName ?? '', { shouldValidate: true })
     setValue('projectName', data.projectName ?? '', { shouldValidate: true })
     setValue('tags', data.tags ?? '', { shouldValidate: true })
+    if (data.activityType === 'FERIE') {
+      setGiorni(Math.round(data.duration / 480 * 10) / 10)
+    } else {
+      setOre(Math.floor(data.duration / 60))
+      setMinuti(data.duration % 60)
+    }
   }
 
   const handleNlInterpret = () => {
@@ -293,6 +312,14 @@ export default function TimeEntryForm({ clients, projects, tags }: Props) {
                 <input type="radio" value="MANUTENZIONE" {...register('activityType')} />
                 Manutenz.
               </label>
+              <label className={styles.radioLabel}>
+                <input type="radio" value="PERMESSO" {...register('activityType')} />
+                Permesso
+              </label>
+              <label className={styles.radioLabel}>
+                <input type="radio" value="FERIE" {...register('activityType')} />
+                Ferie
+              </label>
             </div>
             {errors.activityType && (
               <p className={styles.error}>{errors.activityType.message}</p>
@@ -326,15 +353,43 @@ export default function TimeEntryForm({ clients, projects, tags }: Props) {
 
         <div className={styles.row}>
           <div className={styles.field}>
-            <label className={styles.label}>Durata (minuti) *</label>
-            <input
-              {...register('duration')}
-              type="number"
-              min={1}
-              max={1440}
-              className={styles.input}
-              placeholder="60"
-            />
+            <label className={styles.label}>Durata *</label>
+            <input type="hidden" {...register('duration')} />
+            {isFerie ? (
+              <div className={styles.durationPair}>
+                <input
+                  type="number"
+                  min={0.5}
+                  max={30}
+                  step={0.5}
+                  value={giorni}
+                  onChange={(e) => setGiorni(parseFloat(e.target.value) || 1)}
+                  className={`${styles.input} ${styles.durationUnitInput}`}
+                />
+                <span className={styles.durationUnitLabel}>giorni</span>
+              </div>
+            ) : (
+              <div className={styles.durationPair}>
+                <input
+                  type="number"
+                  min={0}
+                  max={23}
+                  value={ore}
+                  onChange={(e) => setOre(parseInt(e.target.value) || 0)}
+                  className={`${styles.input} ${styles.durationUnitInput}`}
+                />
+                <span className={styles.durationUnitLabel}>h</span>
+                <input
+                  type="number"
+                  min={0}
+                  max={59}
+                  value={minuti}
+                  onChange={(e) => setMinuti(parseInt(e.target.value) || 0)}
+                  className={`${styles.input} ${styles.durationUnitInput}`}
+                />
+                <span className={styles.durationUnitLabel}>min</span>
+              </div>
+            )}
             {errors.duration && <p className={styles.error}>{errors.duration.message}</p>}
           </div>
           <div className={styles.field}>

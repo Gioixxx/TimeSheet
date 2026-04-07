@@ -3,7 +3,10 @@ import type { ActivityType } from '@prisma/client'
 import { prisma } from '@/lib/prisma'
 
 function activityTypeCsvLabel(t: ActivityType): string {
-  return t === 'MANUTENZIONE' ? 'manutenzione' : 'supporto'
+  if (t === 'MANUTENZIONE') return 'manutenzione'
+  if (t === 'PERMESSO') return 'permesso'
+  if (t === 'FERIE') return 'ferie'
+  return 'supporto'
 }
 
 /** Calendar month boundaries in UTC — matches date-only strings from HTML inputs (parsed as UTC). */

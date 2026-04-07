@@ -49,8 +49,10 @@ async function getData(page: number, filters: Filters) {
       lt: new Date(Date.UTC(y, m, 1)),
     }
   }
-  if (filters.type === 'SUPPORTO' || filters.type === 'MANUTENZIONE') {
-    where.activityType = filters.type
+  const validTypes = ['SUPPORTO', 'MANUTENZIONE', 'PERMESSO', 'FERIE']
+  if (filters.type && validTypes.includes(filters.type)) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    where.activityType = filters.type as any
   }
   if (filters.client) {
     where.client = { name: filters.client }

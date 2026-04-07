@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef, useTransition } from 'react'
+import { useRef, useTransition, useState, useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Pencil, X } from 'lucide-react'
@@ -13,7 +13,7 @@ type EntrySnapshot = {
   id: string
   title: string
   description: string | null
-  activityType: 'SUPPORTO' | 'MANUTENZIONE'
+  activityType: 'SUPPORTO' | 'MANUTENZIONE' | 'PERMESSO' | 'FERIE'
   duration: number
   date: Date
   clientName: string | null
@@ -24,6 +24,10 @@ type EntrySnapshot = {
 export default function EditButton({ entry }: { entry: EntrySnapshot }) {
   const dialogRef = useRef<HTMLDialogElement>(null)
   const [isPending, startTransition] = useTransition()
+
+  const [ore, setOre] = useState(Math.floor(entry.duration / 60))
+  const [minuti, setMinuti] = useState(entry.duration % 60)
+  const [giorni, setGiorni] = useState(Math.round(entry.duration / 480 * 10) / 10)
 
   const defaultValues: TimeEntryInput = {
     title: entry.title,
@@ -39,11 +43,21 @@ export default function EditButton({ entry }: { entry: EntrySnapshot }) {
   const {
     register,
     handleSubmit,
+    setValue,
+    watch,
     formState: { errors },
   } = useForm<TimeEntryInput>({
     resolver: zodResolver(timeEntrySchema),
     defaultValues,
   })
+
+  const activityType = watch('activityType')
+  const isFerie = activityType === 'FERIE'
+
+  useEffect(() => {
+    const computed = isFerie ? Math.max(1, Math.round(giorni * 480)) : Math.max(1, ore * 60 + minuti)
+    setValue('duration', computed)
+  }, [ore, minuti, giorni, isFerie, setValue])
 
   const open = () => dialogRef.current?.showModal()
   const close = () => dialogRef.current?.close()
@@ -93,6 +107,14 @@ export default function EditButton({ entry }: { entry: EntrySnapshot }) {
                   <input type="radio" value="MANUTENZIONE" {...register('activityType')} />
                   Manutenz.
                 </label>
+                <label className={styles.radioLabel}>
+                  <input type="radio" value="PERMESSO" {...register('activityType')} />
+                  Permesso
+                </label>
+                <label className={styles.radioLabel}>
+                  <input type="radio" value="FERIE" {...register('activityType')} />
+                  Ferie
+                </label>
               </div>
             </div>
           </div>
@@ -104,8 +126,36 @@ export default function EditButton({ entry }: { entry: EntrySnapshot }) {
 
           <div className={styles.row}>
             <div className={styles.field}>
-              <label className={styles.label}>Durata (min) *</label>
-              <input type="number" min={1} max={1440} {...register('duration')} className={styles.input} />
+              <label className={styles.label}>Durata *</label>
+              <input type="hidden" {...register('duration')} />
+              {isFerie ? (
+                <div className={styles.durationPair}>
+                  <input
+                    type="number" min={0.5} max={30} step={0.5}
+                    value={giorni}
+                    onChange={(e) => setGiorni(parseFloat(e.target.value) || 1)}
+                    className={`${styles.input} ${styles.durationUnitInput}`}
+                  />
+                  <span className={styles.durationUnitLabel}>giorni</span>
+                </div>
+              ) : (
+                <div className={styles.durationPair}>
+                  <input
+                    type="number" min={0} max={23}
+                    value={ore}
+                    onChange={(e) => setOre(parseInt(e.target.value) || 0)}
+                    className={`${styles.input} ${styles.durationUnitInput}`}
+                  />
+                  <span className={styles.durationUnitLabel}>h</span>
+                  <input
+                    type="number" min={0} max={59}
+                    value={minuti}
+                    onChange={(e) => setMinuti(parseInt(e.target.value) || 0)}
+                    className={`${styles.input} ${styles.durationUnitInput}`}
+                  />
+                  <span className={styles.durationUnitLabel}>min</span>
+                </div>
+              )}
               {errors.duration && <p className={styles.error}>{errors.duration.message}</p>}
             </div>
             <div className={styles.field}>

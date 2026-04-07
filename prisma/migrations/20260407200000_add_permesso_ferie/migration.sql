@@ -1,0 +1,2 @@
+-- AddValue to ActivityType enum: PERMESSO, FERIE
+-- SQLite stores enum values as TEXT; no ALTER TABLE required.

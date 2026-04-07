@@ -50,6 +50,8 @@ export default function FilterBar({ clients }: Props) {
         <option value="">Tutti i tipi</option>
         <option value="SUPPORTO">Supporto</option>
         <option value="MANUTENZIONE">Manutenzione</option>
+        <option value="PERMESSO">Permesso</option>
+        <option value="FERIE">Ferie</option>
       </select>
 
       <select

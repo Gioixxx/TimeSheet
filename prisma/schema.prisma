@@ -10,6 +10,8 @@ datasource db {
 enum ActivityType {
   SUPPORTO
   MANUTENZIONE
+  PERMESSO
+  FERIE
 }
 
 model Client {

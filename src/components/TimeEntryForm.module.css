@@ -431,3 +431,20 @@
   cursor: pointer;
   flex-shrink: 0;
 }
+
+.durationPair {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.durationUnitInput {
+  width: 58px !important;
+  flex-shrink: 0;
+}
+
+.durationUnitLabel {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  flex-shrink: 0;
+}

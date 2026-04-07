@@ -7,7 +7,7 @@ const aiResponseSchema = z.object({
   description: z.union([z.string(), z.null()]).optional(),
   durationMinutes: z.number().int().min(1).max(1440),
   date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
-  activityType: z.enum(['SUPPORTO', 'MANUTENZIONE']),
+  activityType: z.enum(['SUPPORTO', 'MANUTENZIONE', 'PERMESSO', 'FERIE']),
   clientName: z.union([z.string(), z.null()]).optional(),
   projectName: z.union([z.string(), z.null()]).optional(),
   tags: z.union([z.string(), z.null()]).optional(),
@@ -46,12 +46,13 @@ Devi estrarre un singolo oggetto JSON con queste chiavi esatte:
 - "description": stringa opzionale con dettagli aggiuntivi dall'utente, o null se non serve
 - "durationMinutes": numero intero da 1 a 1440 (durata in minuti)
 - "date": stringa "YYYY-MM-DD" (data dell'attività; se dice "oggi" o non specifica, usa la data di riferimento fornita)
-- "activityType": "SUPPORTO" oppure "MANUTENZIONE" (ticket/helpdesk/assistenza/cliente → SUPPORTO; manutenzione/evolutiva/sviluppo feature/bugfix strutturale → MANUTENZIONE; se ambiguo, preferisci SUPPORTO)
+- "activityType": uno tra "SUPPORTO", "MANUTENZIONE", "PERMESSO", "FERIE" (ticket/helpdesk/assistenza/cliente → SUPPORTO; manutenzione/evolutiva/sviluppo/bugfix strutturale → MANUTENZIONE; permesso/ore di permesso/congedo orario → PERMESSO; ferie/giorno libero/vacanza → FERIE; se ambiguo, preferisci SUPPORTO)
 - "clientName": nome cliente se citato, altrimenti null (usa il nome esatto dalla lista fornita se corrisponde)
 - "projectName": nome progetto se citato, altrimenti null
 - "tags": stringa con tag separati da virgola, oppure null (es. "ticket, urgente")
 
 Conversioni tempo comuni: 1 ora = 60 minuti, "due ore" = 120, "un'ora e mezza" = 90, "mezz'ora" = 30, "45 minuti" = 45.
+Per FERIE: 1 giorno = 480 minuti, "mezza giornata" = 240, "2 giorni" = 960. Per PERMESSO usa ore/minuti normali.
 
 Rispondi SOLO con JSON valido, senza testo prima o dopo.`
 

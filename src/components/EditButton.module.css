@@ -8,6 +8,11 @@
   width: calc(100vw - 32px);
   padding: 0;
   outline: none;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  margin: 0;
 }
 
 .dialog::backdrop {
@@ -169,4 +174,21 @@
 .cancelBtn:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+}
+
+.durationPair {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.durationUnitInput {
+  width: 58px !important;
+  flex-shrink: 0;
+}
+
+.durationUnitLabel {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  flex-shrink: 0;
 }

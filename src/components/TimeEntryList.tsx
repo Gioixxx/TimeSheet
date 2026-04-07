@@ -1,4 +1,4 @@
-import { List, User, Briefcase, Calendar, Wrench, HeadphonesIcon } from 'lucide-react'
+import { List, User, Briefcase, Calendar, Wrench, HeadphonesIcon, Sun, Clock } from 'lucide-react'
 import DeleteButton from './DeleteButton'
 import EditButton from './EditButton'
 import MonthExportControls from './MonthExportControls'
@@ -11,7 +11,7 @@ type Tag = { id: string; name: string }
 type Client = { id: string; name: string }
 type Project = { id: string; name: string }
 
-type ActivityType = 'SUPPORTO' | 'MANUTENZIONE'
+type ActivityType = 'SUPPORTO' | 'MANUTENZIONE' | 'PERMESSO' | 'FERIE'
 
 type Entry = {
   id: string
@@ -25,12 +25,19 @@ type Entry = {
   tags: Tag[]
 }
 
-function activityMeta(type: ActivityType): { label: string; Icon: typeof Wrench } {
+type IconComponent = typeof Wrench
+function activityMeta(type: ActivityType): { label: string; Icon: IconComponent } {
   if (type === 'MANUTENZIONE') return { label: 'Manutenzione', Icon: Wrench }
+  if (type === 'PERMESSO') return { label: 'Permesso', Icon: Clock }
+  if (type === 'FERIE') return { label: 'Ferie', Icon: Sun }
   return { label: 'Supporto', Icon: HeadphonesIcon }
 }
 
-function formatDuration(minutes: number): string {
+function formatDuration(minutes: number, activityType: ActivityType): string {
+  if (activityType === 'FERIE') {
+    const giorni = minutes / 480
+    return Number.isInteger(giorni) ? `${giorni}g` : `${giorni.toFixed(1)}g`
+  }
   if (minutes < 60) return `${minutes}m`
   const h = Math.floor(minutes / 60)
   const m = minutes % 60
@@ -84,7 +91,7 @@ export default function TimeEntryList({
                       <Icon size={12} aria-hidden />
                       {label}
                     </span>
-                    <span className={styles.duration}>{formatDuration(entry.duration)}</span>
+                    <span className={styles.duration}>{formatDuration(entry.duration, entry.activityType)}</span>
                     <EditButton
                       entry={{
                         id: entry.id,
