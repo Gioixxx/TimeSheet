@@ -264,6 +264,8 @@
 .textarea:focus {
   border-color: var(--border-focus);
   box-shadow: 0 0 0 3px var(--primary-glow);
+  background: rgba(99, 102, 241, 0.04);
+  transition: border-color 0.15s, box-shadow 0.15s, background 0.2s;
 }
 
 .textarea {
@@ -318,7 +320,7 @@
 }
 
 .submitButton {
-  background: var(--primary);
+  background: linear-gradient(135deg, var(--primary) 0%, #7c3aed 100%);
   border: none;
   border-radius: var(--radius-sm);
   color: #fff;
@@ -327,22 +329,39 @@
   font-size: 0.82rem;
   font-weight: 600;
   padding: 8px 14px;
-  transition: background 0.15s, transform 0.1s, box-shadow 0.15s;
+  transition: filter 0.2s, transform 0.12s, box-shadow 0.2s;
   margin-top: 2px;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 6px;
   flex-shrink: 0;
+  position: relative;
+  overflow: hidden;
+}
+
+.submitButton::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.12) 50%, transparent 100%);
+  transform: translateX(-100%);
+  transition: transform 0.4s ease;
+}
+
+.submitButton:hover:not(:disabled)::after {
+  transform: translateX(100%);
 }
 
 .submitButton:hover:not(:disabled) {
-  background: var(--primary-hover);
-  box-shadow: 0 4px 16px var(--primary-glow);
+  filter: brightness(1.15);
+  box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4);
+  transform: translateY(-1px);
 }
 
 .submitButton:active:not(:disabled) {
-  transform: scale(0.98);
+  transform: scale(0.97) translateY(0);
+  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.3);
 }
 
 .submitButton:disabled {
@@ -385,13 +404,14 @@
   font-size: 0.68rem;
   font-weight: 500;
   padding: 3px 8px;
-  transition: border-color 0.15s, background 0.15s, color 0.15s;
+  transition: border-color 0.15s, background 0.15s, color 0.15s, transform 0.15s;
 }
 
 .chip:hover {
   border-color: rgba(99, 102, 241, 0.35);
   background: var(--primary-glow);
   color: var(--primary-hover);
+  transform: scale(1.04);
 }
 
 .chip:focus-visible {
