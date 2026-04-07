@@ -14,8 +14,9 @@
   margin-bottom: 12px;
   flex-shrink: 0;
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
+  gap: 12px;
 }
 
 .calLink {
