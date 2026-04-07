@@ -27,12 +27,13 @@ ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV PORT=3000
 ENV HOSTNAME=0.0.0.0
-ENV DATABASE_URL=file:/data/timesheet.db
+ENV DATABASE_URL=file:///data/timesheet.db
 
 RUN npm install -g prisma@6.7.0
 
 COPY --from=builder /app/.next/standalone ./
 COPY --from=builder /app/prisma ./prisma
+RUN rm -f /app/prisma/*.db
 COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
 COPY --from=builder /app/node_modules/@prisma/client ./node_modules/@prisma/client
 
