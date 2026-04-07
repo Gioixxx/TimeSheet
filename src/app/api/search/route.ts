@@ -11,11 +11,11 @@ export async function GET(req: NextRequest) {
   const entries = await prisma.timeEntry.findMany({
     where: {
       OR: [
-        { title: { contains: q, mode: 'insensitive' } },
-        { description: { contains: q, mode: 'insensitive' } },
-        { client: { name: { contains: q, mode: 'insensitive' } } },
-        { project: { name: { contains: q, mode: 'insensitive' } } },
-        { tags: { some: { name: { contains: q, mode: 'insensitive' } } } },
+        { title: { contains: q } },
+        { description: { contains: q } },
+        { client: { name: { contains: q } } },
+        { project: { name: { contains: q } } },
+        { tags: { some: { name: { contains: q } } } },
       ],
     },
     include: { client: true, project: true, tags: true },

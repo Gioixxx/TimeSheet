@@ -9,7 +9,9 @@
       "Bash(cat /c/Users/Gioix/OneDrive/Desktop/Progetti/timesheet/prisma/migrations/*/migration.sql)",
       "Bash(grep -r \"GEMINI\\\\|API\" /c/Users/Gioix/OneDrive/Desktop/Progetti/timesheet/.env*)",
       "Bash(npm run:*)",
-      "Bash(DATABASE_URL=\"file:./timesheet.db\" npx prisma migrate dev --name add-task)"
+      "Bash(DATABASE_URL=\"file:./timesheet.db\" npx prisma migrate dev --name add-task)",
+      "Bash(grep -E \"\\\\.tsx?$\")",
+      "Bash(grep -E \"\\\\.ts$\")"
     ]
   }
 }
