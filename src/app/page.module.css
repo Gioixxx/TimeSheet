@@ -10,12 +10,16 @@
   box-sizing: border-box;
 }
 
+/* ── Header ──────────────────────────────────────────────────────────── */
+
 .header {
   margin-bottom: 12px;
   flex-shrink: 0;
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
+  gap: 12px;
+  animation: fadeInUp 0.4s ease both;
 }
 
 .calLink {
@@ -29,32 +33,53 @@
   font-size: 0.78rem;
   font-weight: 500;
   padding: 5px 10px;
-  transition: color 0.15s, border-color 0.15s, background 0.15s;
+  transition: color 0.2s, border-color 0.2s, background 0.2s, transform 0.15s, box-shadow 0.2s;
   white-space: nowrap;
 }
 
 .calLink:hover {
   color: var(--primary-hover);
-  border-color: rgba(99, 102, 241, 0.35);
+  border-color: rgba(99, 102, 241, 0.4);
   background: var(--primary-glow);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.15);
+}
+
+.calLink:active {
+  transform: translateY(0);
 }
 
 .title {
   font-size: 1.35rem;
   font-weight: 700;
-  color: var(--text);
   letter-spacing: -0.02em;
   margin-bottom: 2px;
+  /* Gradient shimmer on the full title */
+  background: linear-gradient(
+    90deg,
+    var(--text) 0%,
+    var(--text) 40%,
+    var(--primary-hover) 50%,
+    var(--text) 60%,
+    var(--text) 100%
+  );
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: shimmer 6s linear infinite;
 }
 
 .titleAccent {
-  color: var(--primary);
+  /* accent handled by gradient above */
 }
 
 .subtitle {
   font-size: 0.8rem;
   color: var(--text-muted);
 }
+
+/* ── Stats ───────────────────────────────────────────────────────────── */
 
 .stats {
   display: grid;
@@ -76,6 +101,21 @@
   border-radius: var(--radius-sm);
   padding: 10px 12px;
   backdrop-filter: var(--glass-blur);
+  cursor: default;
+  transition: border-color 0.2s, background 0.2s, transform 0.2s, box-shadow 0.2s;
+  animation: fadeInUp 0.4s ease both;
+}
+
+.statCard:nth-child(1) { animation-delay: 0.05s; }
+.statCard:nth-child(2) { animation-delay: 0.10s; }
+.statCard:nth-child(3) { animation-delay: 0.15s; }
+.statCard:nth-child(4) { animation-delay: 0.20s; }
+
+.statCard:hover {
+  border-color: rgba(99, 102, 241, 0.3);
+  background: rgba(99, 102, 241, 0.06);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(99, 102, 241, 0.12);
 }
 
 .statLabel {
@@ -90,6 +130,11 @@
   font-size: 1.15rem;
   font-weight: 700;
   color: var(--text);
+  transition: color 0.2s;
+}
+
+.statCard:hover .statValue {
+  color: var(--primary-hover);
 }
 
 .statUnit {
@@ -99,6 +144,8 @@
   margin-left: 2px;
 }
 
+/* ── Layout ──────────────────────────────────────────────────────────── */
+
 .content {
   display: flex;
   flex-direction: row;
@@ -106,6 +153,7 @@
   flex: 1;
   min-height: 0;
   align-items: stretch;
+  animation: fadeInUp 0.45s ease 0.15s both;
 }
 
 @media (max-width: 860px) {

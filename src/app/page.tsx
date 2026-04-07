@@ -6,6 +6,7 @@ import TimeEntryForm from '@/components/TimeEntryForm'
 import TimeEntryList from '@/components/TimeEntryList'
 import FilterBar from '@/components/FilterBar'
 import TaskBoard from '@/components/TaskBoard'
+import SearchBar from '@/components/SearchBar'
 import styles from './page.module.css'
 
 const ITEMS_PER_PAGE = 5
@@ -117,6 +118,7 @@ export default async function Home({
           </h1>
           <p className={styles.subtitle}>Traccia il tuo tempo, locally.</p>
         </div>
+        <SearchBar />
         <Link href="/calendario" className={styles.calLink}>
           <CalendarDays size={15} />
           Calendario
