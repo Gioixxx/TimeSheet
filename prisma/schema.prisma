@@ -27,6 +27,8 @@ model Project {
   client    Client?     @relation(fields: [clientId], references: [id])
   entries   TimeEntry[]
   createdAt DateTime    @default(now())
+
+  @@index([clientId])
 }
 
 model Tag {
@@ -36,16 +38,30 @@ model Tag {
 }
 
 model TimeEntry {
-  id            String       @id @default(cuid())
-  title         String
-  description   String?
-  activityType  ActivityType @default(SUPPORTO)
-  duration      Int
-  date          DateTime     @default(now())
-  clientId    String?
-  client      Client?   @relation(fields: [clientId], references: [id])
-  projectId   String?
-  project     Project?  @relation(fields: [projectId], references: [id])
-  tags        Tag[]     @relation("EntryTags")
-  createdAt   DateTime  @default(now())
+  id           String       @id @default(cuid())
+  title        String
+  description  String?
+  activityType ActivityType @default(SUPPORTO)
+  duration     Int
+  date         DateTime     @default(now())
+  clientId     String?
+  client       Client?      @relation(fields: [clientId], references: [id])
+  projectId    String?
+  project      Project?     @relation(fields: [projectId], references: [id])
+  tags         Tag[]        @relation("EntryTags")
+  createdAt    DateTime     @default(now())
+
+  @@index([date(sort: Desc)])
+  @@index([clientId])
+  @@index([projectId])
+}
+
+model Task {
+  id               String   @id @default(cuid())
+  title            String
+  notes            String?
+  clientName       String?
+  projectName      String?
+  estimatedMinutes Int?
+  createdAt        DateTime @default(now())
 }

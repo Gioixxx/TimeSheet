@@ -107,7 +107,10 @@ ${trimmed}`
       },
     })
 
-    const result = await model.generateContent(userBlock)
+    const timeout = new Promise<never>((_, reject) =>
+      setTimeout(() => reject(new Error('Timeout: risposta AI oltre 30 secondi.')), 30_000)
+    )
+    const result = await Promise.race([model.generateContent(userBlock), timeout])
     const raw = result.response.text()
     if (!raw) {
       return { ok: false, code: 'API', message: 'Il modello non ha restituito contenuto.' }

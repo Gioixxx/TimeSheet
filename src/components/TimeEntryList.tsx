@@ -1,8 +1,11 @@
 import { List, User, Briefcase, Calendar, Wrench, HeadphonesIcon } from 'lucide-react'
 import DeleteButton from './DeleteButton'
+import EditButton from './EditButton'
 import MonthExportControls from './MonthExportControls'
 import Pagination from './Pagination'
 import styles from './TimeEntryList.module.css'
+
+const ITEMS_PER_PAGE = 5
 
 type Tag = { id: string; name: string }
 type Client = { id: string; name: string }
@@ -42,14 +45,16 @@ function formatDate(date: Date): string {
   }).format(new Date(date))
 }
 
-export default function TimeEntryList({ 
-  entries, 
-  currentPage, 
-  totalPages 
-}: { 
+export default function TimeEntryList({
+  entries,
+  currentPage,
+  totalPages,
+  totalCount,
+}: {
   entries: Entry[]
   currentPage: number
   totalPages: number
+  totalCount: number
 }) {
   return (
     <div>
@@ -60,7 +65,7 @@ export default function TimeEntryList({
         </h2>
         <div className={styles.headerActions}>
           <MonthExportControls />
-          <span className={styles.count}>{entries.length} voc{entries.length === 1 ? 'e' : 'i'}</span>
+          <span className={styles.count}>{totalCount} voc{totalCount === 1 ? 'e' : 'i'}</span>
         </div>
       </div>
 
@@ -80,6 +85,19 @@ export default function TimeEntryList({
                       {label}
                     </span>
                     <span className={styles.duration}>{formatDuration(entry.duration)}</span>
+                    <EditButton
+                      entry={{
+                        id: entry.id,
+                        title: entry.title,
+                        description: entry.description,
+                        activityType: entry.activityType,
+                        duration: entry.duration,
+                        date: entry.date,
+                        clientName: entry.client?.name ?? null,
+                        projectName: entry.project?.name ?? null,
+                        tags: entry.tags.map((t) => t.name),
+                      }}
+                    />
                     <DeleteButton id={entry.id} />
                   </div>
                 </div>
@@ -125,9 +143,14 @@ export default function TimeEntryList({
           })}
         </ul>
       )}
-      
+
       {totalPages > 1 && (
-        <Pagination currentPage={currentPage} totalPages={totalPages} />
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          totalCount={totalCount}
+          itemsPerPage={ITEMS_PER_PAGE}
+        />
       )}
     </div>
   )

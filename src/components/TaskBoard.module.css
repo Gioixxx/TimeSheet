@@ -1,0 +1,458 @@
+/* ── Board container ─────────────────────────────────────────────────── */
+.board {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 12px 14px;
+  flex-shrink: 0;
+  margin-bottom: 12px;
+}
+
+.boardHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.boardTitle {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+}
+
+.boardTitle svg {
+  color: #eab308;
+}
+
+.boardCount {
+  background: rgba(234, 179, 8, 0.15);
+  border: 1px solid rgba(234, 179, 8, 0.3);
+  border-radius: 99px;
+  color: #fbbf24;
+  font-size: 0.68rem;
+  font-weight: 700;
+  padding: 1px 7px;
+}
+
+.boardEmpty {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  text-align: center;
+  padding: 8px 0 4px;
+}
+
+/* ── Card list (horizontal scroll) ──────────────────────────────────── */
+.cardList {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+  list-style: none;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+
+/* ── Single post-it card ─────────────────────────────────────────────── */
+.card {
+  background: #1c1a08;
+  border: 1px solid rgba(234, 179, 8, 0.25);
+  border-top: 3px solid #eab308;
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+  min-width: 180px;
+  max-width: 220px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.card:hover {
+  border-color: rgba(234, 179, 8, 0.45);
+  background: #221f08;
+}
+
+.cardTop {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 6px;
+}
+
+.cardTitle {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #fef3c7;
+  line-height: 1.3;
+  flex: 1;
+}
+
+.cardDeleteBtn {
+  background: none;
+  border: none;
+  color: rgba(234, 179, 8, 0.4);
+  cursor: pointer;
+  padding: 2px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  transition: color 0.15s;
+}
+
+.cardDeleteBtn:hover {
+  color: var(--danger);
+}
+
+.cardNotes {
+  font-size: 0.72rem;
+  color: rgba(254, 243, 199, 0.6);
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.cardMeta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.cardChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  background: rgba(234, 179, 8, 0.1);
+  border: 1px solid rgba(234, 179, 8, 0.2);
+  border-radius: 99px;
+  color: #fbbf24;
+  font-size: 0.65rem;
+  padding: 1px 6px;
+}
+
+.logBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: rgba(234, 179, 8, 0.15);
+  border: 1px solid rgba(234, 179, 8, 0.35);
+  border-radius: var(--radius-xs);
+  color: #fbbf24;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 4px 8px;
+  margin-top: 2px;
+  align-self: flex-start;
+  transition: background 0.15s;
+}
+
+.logBtn:hover {
+  background: rgba(234, 179, 8, 0.28);
+}
+
+/* ── Add task button & form ──────────────────────────────────────────── */
+.addBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: rgba(234, 179, 8, 0.1);
+  border: 1px solid rgba(234, 179, 8, 0.25);
+  border-radius: var(--radius-sm);
+  color: #fbbf24;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 4px 10px;
+  transition: background 0.15s;
+}
+
+.addBtn:hover {
+  background: rgba(234, 179, 8, 0.2);
+}
+
+.addForm {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  background: #1a180a;
+  border: 1px solid rgba(234, 179, 8, 0.3);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+  margin-top: 8px;
+}
+
+.addInput {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(234, 179, 8, 0.2);
+  border-radius: var(--radius-xs);
+  color: var(--text);
+  font-family: inherit;
+  font-size: 0.8rem;
+  padding: 6px 9px;
+  outline: none;
+  width: 100%;
+  transition: border-color 0.15s;
+}
+
+.addInput::placeholder {
+  color: var(--text-placeholder);
+}
+
+.addInput:focus {
+  border-color: rgba(234, 179, 8, 0.5);
+}
+
+.addRow {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.addRow .addInput {
+  flex: 1;
+  min-width: 100px;
+}
+
+.addActions {
+  display: flex;
+  gap: 6px;
+  justify-content: flex-end;
+}
+
+.addCancelBtn {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xs);
+  color: var(--text-muted);
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.78rem;
+  padding: 5px 10px;
+  transition: background 0.15s;
+}
+
+.addCancelBtn:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.07);
+}
+
+.addSaveBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: rgba(234, 179, 8, 0.2);
+  border: 1px solid rgba(234, 179, 8, 0.4);
+  border-radius: var(--radius-xs);
+  color: #fbbf24;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 5px 10px;
+  transition: background 0.15s;
+}
+
+.addSaveBtn:hover:not(:disabled) {
+  background: rgba(234, 179, 8, 0.3);
+}
+
+.addCancelBtn:disabled,
+.addSaveBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ── Log dialog ──────────────────────────────────────────────────────── */
+.logDialog {
+  background: #0f1120;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-card);
+  color: var(--text);
+  max-width: 380px;
+  width: calc(100vw - 32px);
+  padding: 0;
+  outline: none;
+}
+
+.logDialog::backdrop {
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+}
+
+.logHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px 12px;
+  border-bottom: 1px solid var(--border);
+}
+
+.logTitle {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--text);
+  margin: 0;
+}
+
+.logTitle em {
+  font-style: normal;
+  color: #fbbf24;
+}
+
+.logCloseBtn {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 4px;
+  border-radius: var(--radius-xs);
+  display: flex;
+  align-items: center;
+  transition: color 0.15s;
+}
+
+.logCloseBtn:hover { color: var(--text); }
+
+.logForm {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px 16px;
+}
+
+.logHint {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  font-size: 0.75rem;
+  color: #fbbf24;
+  background: rgba(234, 179, 8, 0.07);
+  border: 1px solid rgba(234, 179, 8, 0.15);
+  border-radius: var(--radius-xs);
+  padding: 5px 9px;
+}
+
+.logHint span {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.logRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.logField {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.logLabel {
+  font-size: 0.65rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.logInput {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  font-family: inherit;
+  font-size: 0.82rem;
+  padding: 7px 10px;
+  width: 100%;
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.logInput:focus {
+  border-color: var(--border-focus);
+  box-shadow: 0 0 0 3px var(--primary-glow);
+}
+
+.logRadioRow {
+  display: flex;
+  gap: 16px;
+  margin-top: 3px;
+}
+
+.logRadio {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.8rem;
+  color: var(--text);
+  cursor: pointer;
+}
+
+.logRadio input {
+  accent-color: var(--primary);
+  cursor: pointer;
+}
+
+.logActions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  margin-top: 2px;
+}
+
+.logCancelBtn {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text-muted);
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.82rem;
+  padding: 7px 12px;
+  transition: background 0.15s;
+}
+
+.logCancelBtn:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.07);
+}
+
+.logSaveBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: var(--primary);
+  border: none;
+  border-radius: var(--radius-sm);
+  color: #fff;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.82rem;
+  font-weight: 600;
+  padding: 7px 14px;
+  transition: background 0.15s;
+}
+
+.logSaveBtn:hover:not(:disabled) {
+  background: var(--primary-hover);
+}
+
+.logCancelBtn:disabled,
+.logSaveBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

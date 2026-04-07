@@ -16,6 +16,43 @@ type Props = {
   tags: { id: string; name: string }[]
 }
 
+type AnyRecognition = {
+  lang: string
+  interimResults: boolean
+  maxAlternatives: number
+  onstart: () => void
+  onend: () => void
+  onerror: () => void
+  onresult: (e: { results: { [0]: { [0]: { transcript: string } } } }) => void
+  start: () => void
+  stop: () => void
+}
+type WinSpeech = {
+  SpeechRecognition?: new () => AnyRecognition
+  webkitSpeechRecognition?: new () => AnyRecognition
+}
+
+function createSpeechRecognition(
+  onResult: (transcript: string) => void,
+  onStateChange: (listening: boolean) => void
+): AnyRecognition | null {
+  const win = window as unknown as WinSpeech
+  const SR = win.SpeechRecognition ?? win.webkitSpeechRecognition
+  if (!SR) {
+    alert('Il tuo browser non supporta il riconoscimento vocale.')
+    return null
+  }
+  const recognition = new SR()
+  recognition.lang = 'it-IT'
+  recognition.interimResults = false
+  recognition.maxAlternatives = 1
+  recognition.onstart = () => onStateChange(true)
+  recognition.onend = () => onStateChange(false)
+  recognition.onerror = () => onStateChange(false)
+  recognition.onresult = (event) => onResult(event.results[0][0].transcript)
+  return recognition
+}
+
 export default function TimeEntryForm({ clients, projects, tags }: Props) {
   const [isPending, startTransition] = useTransition()
   const [isNlPending, startNlTransition] = useTransition()
@@ -23,8 +60,8 @@ export default function TimeEntryForm({ clients, projects, tags }: Props) {
   const [isNlListening, setIsNlListening] = useState(false)
   const [nlText, setNlText] = useState('')
   const [nlError, setNlError] = useState<string | null>(null)
-  const recognitionRef = useRef<unknown>(null)
-  const nlRecognitionRef = useRef<unknown>(null)
+  const recognitionRef = useRef<AnyRecognition | null>(null)
+  const nlRecognitionRef = useRef<AnyRecognition | null>(null)
 
   const today = new Date().toISOString().split('T')[0]
 
@@ -131,89 +168,31 @@ export default function TimeEntryForm({ clients, projects, tags }: Props) {
   }
 
   const toggleVoice = () => {
-    type AnyRecognition = {
-      lang: string
-      interimResults: boolean
-      maxAlternatives: number
-      onstart: () => void
-      onend: () => void
-      onerror: () => void
-      onresult: (e: { results: { [0]: { [0]: { transcript: string } } } }) => void
-      start: () => void
-      stop: () => void
-    }
-    type WinSpeech = { SpeechRecognition?: new () => AnyRecognition; webkitSpeechRecognition?: new () => AnyRecognition }
-    const win = window as unknown as WinSpeech
-    const SR = win.SpeechRecognition ?? win.webkitSpeechRecognition
-
-    if (!SR) {
-      alert('Il tuo browser non supporta il riconoscimento vocale.')
-      return
-    }
-
     if (isListening) {
-      ;(recognitionRef.current as AnyRecognition | null)?.stop()
+      recognitionRef.current?.stop()
       return
     }
-
-    const recognition = new SR()
-    recognition.lang = 'it-IT'
-    recognition.interimResults = false
-    recognition.maxAlternatives = 1
-
-    recognition.onstart = () => setIsListening(true)
-    recognition.onend = () => setIsListening(false)
-    recognition.onerror = () => setIsListening(false)
-    recognition.onresult = (event) => {
-      const transcript = event.results[0][0].transcript
-      setValue('description', transcript, { shouldValidate: true })
-    }
-
-    recognitionRef.current = recognition
-    recognition.start()
+    const rec = createSpeechRecognition(
+      (transcript) => setValue('description', transcript, { shouldValidate: true }),
+      setIsListening
+    )
+    if (!rec) return
+    recognitionRef.current = rec
+    rec.start()
   }
 
   const toggleNlVoice = () => {
-    type AnyRecognition = {
-      lang: string
-      interimResults: boolean
-      maxAlternatives: number
-      onstart: () => void
-      onend: () => void
-      onerror: () => void
-      onresult: (e: { results: { [0]: { [0]: { transcript: string } } } }) => void
-      start: () => void
-      stop: () => void
-    }
-    type WinSpeech = { SpeechRecognition?: new () => AnyRecognition; webkitSpeechRecognition?: new () => AnyRecognition }
-    const win = window as unknown as WinSpeech
-    const SR = win.SpeechRecognition ?? win.webkitSpeechRecognition
-
-    if (!SR) {
-      alert('Il tuo browser non supporta il riconoscimento vocale.')
-      return
-    }
-
     if (isNlListening) {
-      ;(nlRecognitionRef.current as AnyRecognition | null)?.stop()
+      nlRecognitionRef.current?.stop()
       return
     }
-
-    const recognition = new SR()
-    recognition.lang = 'it-IT'
-    recognition.interimResults = false
-    recognition.maxAlternatives = 1
-
-    recognition.onstart = () => setIsNlListening(true)
-    recognition.onend = () => setIsNlListening(false)
-    recognition.onerror = () => setIsNlListening(false)
-    recognition.onresult = (event) => {
-      const transcript = event.results[0][0].transcript
-      setNlText((prev) => `${prev ? `${prev} ` : ''}${transcript}`.trim())
-    }
-
-    nlRecognitionRef.current = recognition
-    recognition.start()
+    const rec = createSpeechRecognition(
+      (transcript) => setNlText((prev) => `${prev ? `${prev} ` : ''}${transcript}`.trim()),
+      setIsNlListening
+    )
+    if (!rec) return
+    nlRecognitionRef.current = rec
+    rec.start()
   }
 
   return (
@@ -231,7 +210,7 @@ export default function TimeEntryForm({ clients, projects, tags }: Props) {
         </summary>
         <div className={styles.foldBody}>
           <p className={styles.nlHint} id="nl-entry-hint">
-            Esempio: «2h supporto ticket per Rossi Spa oggi».
+            Esempi: «2h supporto ticket per Rossi Spa oggi» · «45min manutenzione deploy progetto Alpha» · «mezz&apos;ora meeting con cliente Bianchi, tag: riunione»
           </p>
           <div className={styles.nlTextareaWrap}>
             <textarea
