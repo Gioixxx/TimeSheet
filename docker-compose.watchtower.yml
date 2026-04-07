@@ -1,0 +1,14 @@
+services:
+  watchtower:
+    image: containrrr/watchtower
+    container_name: watchtower
+    restart: unless-stopped
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /root/.docker/config.json:/config.json:ro
+    environment:
+      WATCHTOWER_POLL_INTERVAL: 300        # controlla ogni 5 minuti
+      WATCHTOWER_CLEANUP: "true"           # rimuove le immagini vecchie
+      WATCHTOWER_INCLUDE_STOPPED: "false"
+      WATCHTOWER_SCOPE: timesheet          # aggiorna solo il container timesheet
+    command: --scope timesheet

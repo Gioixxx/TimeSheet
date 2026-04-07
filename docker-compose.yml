@@ -1,7 +1,9 @@
 services:
   timesheet:
-    build: .
+    image: ghcr.io/gioixxx/timesheet:latest
     container_name: timesheet
+    labels:
+      - com.centurylinklabs.watchtower.scope=timesheet
     ports:
       - "3000:3000"
     environment:
