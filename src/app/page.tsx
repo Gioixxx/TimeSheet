@@ -40,7 +40,7 @@ type Filters = {
 }
 
 async function getData(page: number, filters: Filters) {
-  const where: Parameters<typeof prisma.timeEntry.findMany>[0]['where'] = {}
+  const where: NonNullable<Parameters<typeof prisma.timeEntry.findMany>[0]>['where'] = {}
 
   if (filters.month) {
     const [y, m] = filters.month.split('-').map(Number)
