@@ -22,7 +22,7 @@ RUN cp -r .next/static .next/standalone/.next/static && cp -r public .next/stand
 
 FROM node:20-bookworm-slim AS runner
 WORKDIR /app
-RUN apt-get update -y && apt-get install -y openssl ca-certificates && rm -rf /var/lib/apt/lists/*
+RUN apt-get update -y && apt-get install -y openssl ca-certificates curl && rm -rf /var/lib/apt/lists/*
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV PORT=3000
