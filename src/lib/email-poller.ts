@@ -1,8 +1,5 @@
 import { ImapFlow } from 'imapflow'
-import { convert as htmlToText } from 'html-to-text'
 import { prisma } from '@/lib/prisma'
-import { parseNaturalLanguageToTimeEntry } from '@/lib/parse-nl-time-entry'
-import { timeEntrySchema } from '@/lib/schemas'
 
 export type PollResult = {
   created: number
@@ -23,15 +20,6 @@ function getConfig() {
     .filter(Boolean)
 
   return { enabled, host, port, user, password, mailbox, allowedSenders }
-}
-
-function extractPlainText(message: {
-  text?: string
-  html?: string
-}): string {
-  if (message.text?.trim()) return message.text.trim()
-  if (message.html?.trim()) return htmlToText(message.html, { wordwrap: false })
-  return ''
 }
 
 function extractAddress(from: string | { address?: string; name?: string } | undefined): string {
@@ -117,96 +105,19 @@ export async function pollEmails(): Promise<PollResult> {
             continue
           }
 
-          // Truncate to 4000 chars for Gemini
+          // Truncate to 4000 chars
           if (emailText.length > 4000) emailText = emailText.slice(0, 4000)
 
-          // Load context for AI
-          const [clients, projects] = await Promise.all([
-            prisma.client.findMany({ select: { name: true }, orderBy: { name: 'asc' } }),
-            prisma.project.findMany({ select: { name: true }, orderBy: { name: 'asc' } }),
-          ])
-
-          const referenceDate = new Date().toISOString().slice(0, 10)
-          const result = await parseNaturalLanguageToTimeEntry(emailText, {
-            referenceDate,
-            clientNames: clients.map((c) => c.name),
-            projectNames: projects.map((p) => p.name),
-          })
-
-          if (!result.ok) {
-            await prisma.processedEmail.create({
-              data: { messageId, subject, fromAddress: from, error: result.message },
-            })
-            failed++
-            continue
-          }
-
-          const validated = timeEntrySchema.safeParse(result.data)
-          if (!validated.success) {
-            await prisma.processedEmail.create({
-              data: {
-                messageId,
-                subject,
-                fromAddress: from,
-                error: 'Validazione fallita: ' + validated.error.message,
-              },
-            })
-            failed++
-            continue
-          }
-
-          const data = validated.data
-
-          // Resolve client/project/tags and create entry
-          let clientId: string | undefined
-          if (data.clientName?.trim()) {
-            const c = await prisma.client.upsert({
-              where: { name: data.clientName.trim() },
-              update: {},
-              create: { name: data.clientName.trim() },
-            })
-            clientId = c.id
-          }
-
-          let projectId: string | undefined
-          if (data.projectName?.trim()) {
-            const existing = await prisma.project.findFirst({
-              where: { name: data.projectName.trim(), clientId: clientId ?? null },
-            })
-            const project =
-              existing ??
-              (await prisma.project.create({
-                data: { name: data.projectName.trim(), clientId: clientId ?? null },
-              }))
-            projectId = project.id
-          }
-
-          const tagNames = (data.tags ?? '')
-            .split(',')
-            .map((t) => t.trim().toLowerCase())
-            .filter(Boolean)
-
-          const tagRecords = await Promise.all(
-            tagNames.map((name) =>
-              prisma.tag.upsert({ where: { name }, update: {}, create: { name } })
-            )
-          )
-
-          const entry = await prisma.timeEntry.create({
+          // Create task directly from email subject + body
+          const task = await prisma.task.create({
             data: {
-              title: data.title,
-              description: data.description,
-              activityType: data.activityType,
-              duration: data.duration,
-              date: new Date(data.date),
-              clientId: clientId ?? null,
-              projectId: projectId ?? null,
-              tags: { connect: tagRecords.map((t) => ({ id: t.id })) },
+              title: subject || emailText.slice(0, 100),
+              notes: emailText,
             },
           })
 
           await prisma.processedEmail.create({
-            data: { messageId, subject, fromAddress: from, entryId: entry.id },
+            data: { messageId, subject, fromAddress: from, entryId: task.id },
           })
 
           // Mark as read on IMAP
