@@ -1,19 +1,12 @@
 import { prisma } from '@/lib/prisma'
 import { Suspense } from 'react'
-import Link from 'next/link'
-import { List, CalendarDays, Sun, User, Briefcase, Wrench, HeadphonesIcon, Clock } from 'lucide-react'
+import { Sun, User, Briefcase, Wrench, HeadphonesIcon, Clock } from 'lucide-react'
 import TimeEntryForm from '@/components/TimeEntryForm'
 import TaskBoard from '@/components/TaskBoard'
 import EditButton from '@/components/EditButton'
 import DeleteButton from '@/components/DeleteButton'
-import SearchBar from '@/components/SearchBar'
+import Navbar from '@/components/Navbar'
 import styles from './page.module.css'
-
-const MONTH_NAMES = [
-  'Gennaio', 'Febbraio', 'Marzo', 'Aprile', 'Maggio', 'Giugno',
-  'Luglio', 'Agosto', 'Settembre', 'Ottobre', 'Novembre', 'Dicembre',
-]
-const DAY_NAMES = ['Domenica', 'Lunedì', 'Martedì', 'Mercoledì', 'Giovedì', 'Venerdì', 'Sabato']
 
 type ActivityType = 'SUPPORTO' | 'MANUTENZIONE' | 'PERMESSO' | 'FERIE'
 
@@ -82,33 +75,9 @@ export default async function OggiPage() {
     .sort((a, b) => b[1] - a[1])
     .map(([type, min]) => `${formatDuration(min, type)} ${activityMeta(type).label}`)
 
-  const dateLabel = `${DAY_NAMES[now.getDay()]} ${now.getDate()} ${MONTH_NAMES[now.getMonth()]} ${now.getFullYear()}`
-
   return (
     <div className={styles.page}>
-      <header className={styles.header}>
-        <div>
-          <h1 className={styles.title}>
-            Time<span className={styles.titleAccent}>sheet</span>
-          </h1>
-          <p className={styles.subtitle}>{dateLabel}</p>
-        </div>
-        <SearchBar />
-        <nav className={styles.nav}>
-          <Link href="/" className={styles.navLink}>
-            <List size={14} />
-            Lista
-          </Link>
-          <Link href="/calendario" className={styles.navLink}>
-            <CalendarDays size={14} />
-            Calendario
-          </Link>
-          <span className={styles.navLinkActive}>
-            <Sun size={14} />
-            Oggi
-          </span>
-        </nav>
-      </header>
+      <Navbar />
 
       <div className={styles.stats}>
         <div className={styles.statCard}>

@@ -1,12 +1,10 @@
 import { prisma } from '@/lib/prisma'
 import { Suspense } from 'react'
-import Link from 'next/link'
-import { CalendarDays, Sun } from 'lucide-react'
 import TimeEntryForm from '@/components/TimeEntryForm'
 import TimeEntryList from '@/components/TimeEntryList'
 import FilterBar from '@/components/FilterBar'
 import TaskBoard from '@/components/TaskBoard'
-import SearchBar from '@/components/SearchBar'
+import Navbar from '@/components/Navbar'
 import styles from './page.module.css'
 
 const ITEMS_PER_PAGE = 5
@@ -111,23 +109,7 @@ export default async function Home({
 
   return (
     <div className={styles.page}>
-      <header className={styles.header}>
-        <div>
-          <h1 className={styles.title}>
-            Time<span className={styles.titleAccent}>sheet</span>
-          </h1>
-          <p className={styles.subtitle}>Traccia il tuo tempo, locally.</p>
-        </div>
-        <SearchBar />
-        <Link href="/oggi" className={styles.calLink}>
-          <Sun size={15} />
-          Oggi
-        </Link>
-        <Link href="/calendario" className={styles.calLink}>
-          <CalendarDays size={15} />
-          Calendario
-        </Link>
-      </header>
+      <Navbar />
 
       <div className={styles.stats}>
         <div className={styles.statCard}>

@@ -5,69 +5,6 @@
   min-height: 100dvh;
 }
 
-.header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 20px;
-}
-
-.headerLeft {
-  display: flex;
-  align-items: center;
-  gap: 20px;
-}
-
-.title {
-  font-size: 1.2rem;
-  font-weight: 700;
-  color: var(--text);
-  letter-spacing: -0.02em;
-}
-
-.titleAccent {
-  color: var(--primary);
-}
-
-.nav {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  background: var(--bg-surface);
-  border: 1px solid var(--border);
-  border-radius: 99px;
-  padding: 3px;
-}
-
-.navLink {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  color: var(--text-muted);
-  font-size: 0.78rem;
-  font-weight: 500;
-  padding: 4px 10px;
-  border-radius: 99px;
-  transition: color 0.15s, background 0.15s;
-}
-
-.navLink:hover {
-  color: var(--text);
-  background: var(--bg-surface-hover);
-}
-
-.navLinkActive {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  color: var(--text);
-  font-size: 0.78rem;
-  font-weight: 600;
-  padding: 4px 10px;
-  border-radius: 99px;
-  background: var(--primary);
-}
-
 /* Month navigation */
 .monthNav {
   display: flex;
