@@ -295,10 +295,15 @@
   border-radius: var(--radius);
   box-shadow: var(--shadow-card);
   color: var(--text);
-  max-width: 380px;
+  max-width: 480px;
   width: calc(100vw - 32px);
   padding: 0;
   outline: none;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  margin: 0;
 }
 
 .logDialog::backdrop {
@@ -402,6 +407,56 @@
   border-color: var(--border-focus);
   box-shadow: 0 0 0 3px var(--primary-glow);
 }
+
+.logDurationPair {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.logDurationUnitInput {
+  width: 58px !important;
+  flex-shrink: 0;
+}
+
+.logDurationUnitLabel {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+.logTextarea {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  font-family: inherit;
+  font-size: 0.82rem;
+  padding: 7px 10px;
+  width: 100%;
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  resize: vertical;
+}
+
+.logTextarea:focus {
+  border-color: var(--border-focus);
+  box-shadow: 0 0 0 3px var(--primary-glow);
+}
+
+.editTaskBtn {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 2px 4px;
+  border-radius: var(--radius-xs);
+  display: flex;
+  align-items: center;
+  transition: color 0.15s;
+}
+
+.editTaskBtn:hover { color: var(--text); }
 
 .logRadioRow {
   display: flex;

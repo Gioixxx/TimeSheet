@@ -101,7 +101,7 @@ const taskSchema = z.object({
   notes: z.string().optional(),
   clientName: z.string().optional(),
   projectName: z.string().optional(),
-  estimatedMinutes: z.coerce.number().int().min(1).max(1440).optional(),
+  estimatedMinutes: z.coerce.number().int().min(1).max(99999).optional(),
 })
 
 export async function createTask(raw: unknown) {
@@ -123,16 +123,25 @@ export async function deleteTask(id: string) {
   revalidatePath('/')
 }
 
+export async function updateTask(
+  id: string,
+  data: { title: string; notes?: string; clientName?: string; projectName?: string; estimatedMinutes?: number }
+) {
+  await prisma.task.update({ where: { id }, data })
+  revalidatePath('/')
+}
+
 export async function logTaskAsEntry(
   taskId: string,
   duration: number,
   date: string,
-  activityType: 'SUPPORTO' | 'MANUTENZIONE'
+  activityType: 'SUPPORTO' | 'MANUTENZIONE',
+  description?: string
 ) {
   const task = await prisma.task.findUniqueOrThrow({ where: { id: taskId } })
   const entryData = timeEntrySchema.parse({
     title: task.title,
-    description: task.notes ?? undefined,
+    description: description ?? task.notes ?? undefined,
     activityType,
     duration,
     date,

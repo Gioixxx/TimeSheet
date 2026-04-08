@@ -138,7 +138,8 @@ export default function TimeEntryForm({ clients, projects, tags }: Props) {
   const onSubmit = (data: TimeEntryInput) => {
     startTransition(async () => {
       await createTimeEntry(data)
-      reset({ date: today, duration: 60, activityType: 'SUPPORTO' })
+      const currentDate = new Date().toISOString().split('T')[0]
+      reset({ title: '', description: '', activityType: 'SUPPORTO', duration: 60, date: currentDate, clientName: '', projectName: '', tags: '' })
       setOre(1); setMinuti(0); setGiorni(1)
     })
   }
