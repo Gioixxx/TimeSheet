@@ -13,7 +13,11 @@
       "Bash(grep -E \"\\\\.tsx?$\")",
       "Bash(grep -E \"\\\\.ts$\")",
       "Bash(DATABASE_URL=\"file:./timesheet.db\" npx prisma migrate dev --name add-processed-email)",
-      "Bash(npm i:*)"
+      "Bash(npm i:*)",
+      "Bash(gh release create v1.0.0 --repo Gioixxx/TimeSheet --title 'v1.0.0 — Prima release stabile' --notes ':*)",
+      "Bash(node -e ':*)",
+      "Bash(sqlite3 prisma/timesheet.db \"SELECT id, title, date FROM TimeEntry ORDER BY date DESC LIMIT 5;\")",
+      "Bash(sqlite3.exe prisma/timesheet.db \"SELECT id, title, date FROM TimeEntry ORDER BY date DESC LIMIT 5;\")"
     ]
   }
 }

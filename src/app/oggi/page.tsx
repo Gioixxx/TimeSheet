@@ -33,12 +33,13 @@ const SUGGESTIONS_LIMIT = 20
 
 export default async function OggiPage() {
   const now = new Date()
-  const startOfToday = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()))
-  const endOfToday = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + 1))
+  // Usa local midnight per evitare disallineamenti timezone (app locale)
+  const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+  const endOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1)
 
-  // Lunedì della settimana corrente
+  // Lunedì della settimana corrente (local)
   const startOfWeek = new Date(startOfToday)
-  startOfWeek.setUTCDate(startOfToday.getUTCDate() - ((startOfToday.getUTCDay() + 6) % 7))
+  startOfWeek.setDate(startOfToday.getDate() - ((startOfToday.getDay() + 6) % 7))
 
   const [entries, todayAggr, weekAggr, clients, projects, tags] = await Promise.all([
     prisma.timeEntry.findMany({
