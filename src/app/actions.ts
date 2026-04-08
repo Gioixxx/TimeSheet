@@ -64,6 +64,7 @@ export async function createTimeEntry(raw: unknown) {
   })
 
   revalidatePath('/')
+  revalidatePath('/oggi')
 }
 
 export async function updateTimeEntry(id: string, raw: unknown) {
@@ -85,11 +86,13 @@ export async function updateTimeEntry(id: string, raw: unknown) {
   })
 
   revalidatePath('/')
+  revalidatePath('/oggi')
 }
 
 export async function deleteTimeEntry(id: string) {
   await prisma.timeEntry.delete({ where: { id } })
   revalidatePath('/')
+  revalidatePath('/oggi')
 }
 
 // ── Task actions ────────────────────────────────────────────────────────────

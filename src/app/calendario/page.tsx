@@ -1,6 +1,6 @@
 import { prisma } from '@/lib/prisma'
 import Link from 'next/link'
-import { ChevronLeft, ChevronRight, List } from 'lucide-react'
+import { ChevronLeft, ChevronRight, List, Sun } from 'lucide-react'
 import styles from './page.module.css'
 
 function getMonthBounds(year: number, month: number) {
@@ -113,6 +113,10 @@ export default async function CalendarioPage({
             <Link href="/" className={styles.navLink}>
               <List size={14} />
               Lista
+            </Link>
+            <Link href="/oggi" className={styles.navLink}>
+              <Sun size={14} />
+              Oggi
             </Link>
             <span className={styles.navLinkActive}>Calendario</span>
           </nav>

@@ -1,0 +1,232 @@
+import { prisma } from '@/lib/prisma'
+import { Suspense } from 'react'
+import Link from 'next/link'
+import { List, CalendarDays, Sun, User, Briefcase, Wrench, HeadphonesIcon, Clock } from 'lucide-react'
+import TimeEntryForm from '@/components/TimeEntryForm'
+import TaskBoard from '@/components/TaskBoard'
+import EditButton from '@/components/EditButton'
+import DeleteButton from '@/components/DeleteButton'
+import SearchBar from '@/components/SearchBar'
+import styles from './page.module.css'
+
+const MONTH_NAMES = [
+  'Gennaio', 'Febbraio', 'Marzo', 'Aprile', 'Maggio', 'Giugno',
+  'Luglio', 'Agosto', 'Settembre', 'Ottobre', 'Novembre', 'Dicembre',
+]
+const DAY_NAMES = ['Domenica', 'Lunedì', 'Martedì', 'Mercoledì', 'Giovedì', 'Venerdì', 'Sabato']
+
+type ActivityType = 'SUPPORTO' | 'MANUTENZIONE' | 'PERMESSO' | 'FERIE'
+
+type IconComponent = typeof Wrench
+function activityMeta(type: ActivityType): { label: string; Icon: IconComponent } {
+  if (type === 'MANUTENZIONE') return { label: 'Manutenzione', Icon: Wrench }
+  if (type === 'PERMESSO') return { label: 'Permesso', Icon: Clock }
+  if (type === 'FERIE') return { label: 'Ferie', Icon: Sun }
+  return { label: 'Supporto', Icon: HeadphonesIcon }
+}
+
+function formatDuration(minutes: number, activityType: ActivityType): string {
+  if (activityType === 'FERIE') {
+    const giorni = minutes / 480
+    return Number.isInteger(giorni) ? `${giorni}g` : `${giorni.toFixed(1)}g`
+  }
+  if (minutes < 60) return `${minutes}m`
+  const h = Math.floor(minutes / 60)
+  const m = minutes % 60
+  return m === 0 ? `${h}h` : `${h}h ${m}m`
+}
+
+const SUGGESTIONS_LIMIT = 20
+
+export default async function OggiPage() {
+  const now = new Date()
+  const startOfToday = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()))
+  const endOfToday = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + 1))
+
+  // Lunedì della settimana corrente
+  const startOfWeek = new Date(startOfToday)
+  startOfWeek.setUTCDate(startOfToday.getUTCDate() - ((startOfToday.getUTCDay() + 6) % 7))
+
+  const [entries, todayAggr, weekAggr, clients, projects, tags] = await Promise.all([
+    prisma.timeEntry.findMany({
+      where: { date: { gte: startOfToday, lt: endOfToday } },
+      include: { client: true, project: true, tags: true },
+      orderBy: { date: 'desc' },
+    }),
+    prisma.timeEntry.aggregate({
+      where: { date: { gte: startOfToday, lt: endOfToday } },
+      _sum: { duration: true },
+    }),
+    prisma.timeEntry.aggregate({
+      where: { date: { gte: startOfWeek } },
+      _sum: { duration: true },
+    }),
+    prisma.client.findMany({ take: SUGGESTIONS_LIMIT, orderBy: { entries: { _count: 'desc' } } }),
+    prisma.project.findMany({ take: SUGGESTIONS_LIMIT, orderBy: { entries: { _count: 'desc' } } }),
+    prisma.tag.findMany({ take: SUGGESTIONS_LIMIT, orderBy: { entries: { _count: 'desc' } } }),
+  ])
+
+  const todayMin = todayAggr._sum.duration ?? 0
+  const weekMin = weekAggr._sum.duration ?? 0
+
+  const todayHours = (todayMin / 60).toFixed(1)
+  const weekHours = (weekMin / 60).toFixed(1)
+
+  // Breakdown per tipo attività
+  const breakdown = new Map<ActivityType, number>()
+  for (const e of entries) {
+    const prev = breakdown.get(e.activityType) ?? 0
+    breakdown.set(e.activityType, prev + e.duration)
+  }
+  const breakdownItems = Array.from(breakdown.entries())
+    .sort((a, b) => b[1] - a[1])
+    .map(([type, min]) => `${formatDuration(min, type)} ${activityMeta(type).label}`)
+
+  const dateLabel = `${DAY_NAMES[now.getDay()]} ${now.getDate()} ${MONTH_NAMES[now.getMonth()]} ${now.getFullYear()}`
+
+  return (
+    <div className={styles.page}>
+      <header className={styles.header}>
+        <div>
+          <h1 className={styles.title}>
+            Time<span className={styles.titleAccent}>sheet</span>
+          </h1>
+          <p className={styles.subtitle}>{dateLabel}</p>
+        </div>
+        <SearchBar />
+        <nav className={styles.nav}>
+          <Link href="/" className={styles.navLink}>
+            <List size={14} />
+            Lista
+          </Link>
+          <Link href="/calendario" className={styles.navLink}>
+            <CalendarDays size={14} />
+            Calendario
+          </Link>
+          <span className={styles.navLinkActive}>
+            <Sun size={14} />
+            Oggi
+          </span>
+        </nav>
+      </header>
+
+      <div className={styles.stats}>
+        <div className={styles.statCard}>
+          <p className={styles.statLabel}>Ore oggi</p>
+          <p className={styles.statValue}>
+            {todayHours}
+            <span className={styles.statUnit}>h</span>
+          </p>
+        </div>
+        <div className={styles.statCard}>
+          <p className={styles.statLabel}>Voci oggi</p>
+          <p className={styles.statValue}>{entries.length}</p>
+        </div>
+        <div className={styles.statCard}>
+          <p className={styles.statLabel}>Breakdown</p>
+          <p className={styles.statValueSmall}>
+            {breakdownItems.length > 0 ? breakdownItems.join(' · ') : '—'}
+          </p>
+        </div>
+        <div className={styles.statCard}>
+          <p className={styles.statLabel}>Questa settimana</p>
+          <p className={styles.statValue}>
+            {weekHours}
+            <span className={styles.statUnit}>h</span>
+          </p>
+        </div>
+      </div>
+
+      <div className={styles.content}>
+        <div className={styles.formColumn}>
+          <TimeEntryForm clients={clients} projects={projects} tags={tags} />
+        </div>
+        <div className={styles.listColumn}>
+          <Suspense>
+            <TaskBoard />
+          </Suspense>
+
+          <div className={styles.todayList}>
+            <h2 className={styles.listHeader}>
+              <Sun size={15} />
+              Voci di oggi
+              {entries.length > 0 && (
+                <span className={styles.listCount}>{entries.length}</span>
+              )}
+            </h2>
+
+            {entries.length === 0 ? (
+              <p className={styles.empty}>Nessuna voce oggi. Inizia a tracciare!</p>
+            ) : (
+              <ul className={styles.list}>
+                {entries.map((entry) => {
+                  const { label, Icon } = activityMeta(entry.activityType)
+                  return (
+                    <li key={entry.id} className={styles.entry}>
+                      <div className={styles.entryTop}>
+                        <span className={styles.entryTitle}>{entry.title}</span>
+                        <div className={styles.entryRight}>
+                          <span className={styles.activityBadge} title={label}>
+                            <Icon size={12} aria-hidden />
+                            {label}
+                          </span>
+                          <span className={styles.duration}>
+                            {formatDuration(entry.duration, entry.activityType)}
+                          </span>
+                          <EditButton
+                            entry={{
+                              id: entry.id,
+                              title: entry.title,
+                              description: entry.description,
+                              activityType: entry.activityType,
+                              duration: entry.duration,
+                              date: entry.date,
+                              clientName: entry.client?.name ?? null,
+                              projectName: entry.project?.name ?? null,
+                              tags: entry.tags.map((t) => t.name),
+                            }}
+                          />
+                          <DeleteButton id={entry.id} />
+                        </div>
+                      </div>
+
+                      {entry.description && (
+                        <p className={styles.description}>{entry.description}</p>
+                      )}
+
+                      <div className={styles.entryMeta}>
+                        {entry.client && (
+                          <span className={styles.metaChip}>
+                            <User size={11} />
+                            {entry.client.name}
+                          </span>
+                        )}
+                        {entry.client && entry.project && (
+                          <span className={styles.metaSep}>›</span>
+                        )}
+                        {entry.project && (
+                          <span className={styles.metaChip}>
+                            <Briefcase size={11} />
+                            {entry.project.name}
+                          </span>
+                        )}
+                      </div>
+
+                      {entry.tags.length > 0 && (
+                        <div className={styles.tagList}>
+                          {entry.tags.map((tag) => (
+                            <span key={tag.id} className={styles.tag}>#{tag.name}</span>
+                          ))}
+                        </div>
+                      )}
+                    </li>
+                  )
+                })}
+              </ul>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}

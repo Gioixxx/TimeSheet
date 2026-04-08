@@ -1,7 +1,7 @@
 import { prisma } from '@/lib/prisma'
 import { Suspense } from 'react'
 import Link from 'next/link'
-import { CalendarDays } from 'lucide-react'
+import { CalendarDays, Sun } from 'lucide-react'
 import TimeEntryForm from '@/components/TimeEntryForm'
 import TimeEntryList from '@/components/TimeEntryList'
 import FilterBar from '@/components/FilterBar'
@@ -119,6 +119,10 @@ export default async function Home({
           <p className={styles.subtitle}>Traccia il tuo tempo, locally.</p>
         </div>
         <SearchBar />
+        <Link href="/oggi" className={styles.calLink}>
+          <Sun size={15} />
+          Oggi
+        </Link>
         <Link href="/calendario" className={styles.calLink}>
           <CalendarDays size={15} />
           Calendario
