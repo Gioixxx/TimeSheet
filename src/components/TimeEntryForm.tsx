@@ -14,6 +14,7 @@ type Props = {
   clients: { id: string; name: string }[]
   projects: { id: string; name: string; clientId: string | null }[]
   tags: { id: string; name: string }[]
+  defaultDate?: string
 }
 
 type AnyRecognition = {
@@ -53,7 +54,7 @@ function createSpeechRecognition(
   return recognition
 }
 
-export default function TimeEntryForm({ clients, projects, tags }: Props) {
+export default function TimeEntryForm({ clients, projects, tags, defaultDate }: Props) {
   const [isPending, startTransition] = useTransition()
   const [isNlPending, startNlTransition] = useTransition()
   const [isListening, setIsListening] = useState(false)
@@ -79,7 +80,7 @@ export default function TimeEntryForm({ clients, projects, tags }: Props) {
     formState: { errors },
   } = useForm<TimeEntryInput>({
     resolver: zodResolver(timeEntrySchema),
-    defaultValues: { date: today, duration: 60, activityType: 'SUPPORTO' },
+    defaultValues: { date: defaultDate ?? today, duration: 60, activityType: 'SUPPORTO' },
   })
 
   const activityType = watch('activityType')

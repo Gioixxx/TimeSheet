@@ -31,7 +31,15 @@ function formatDuration(minutes: number, activityType: ActivityType): string {
 
 const SUGGESTIONS_LIMIT = 20
 
-export default async function OggiPage() {
+export default async function OggiPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>
+}) {
+  const params = await searchParams
+  const rawDate = typeof params.date === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(params.date)
+    ? params.date
+    : null
   const now = new Date()
   // Usa local midnight per evitare disallineamenti timezone (app locale)
   const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate())
@@ -109,7 +117,7 @@ export default async function OggiPage() {
 
       <div className={styles.content}>
         <div className={styles.formColumn}>
-          <TimeEntryForm clients={clients} projects={projects} tags={tags} />
+          <TimeEntryForm clients={clients} projects={projects} tags={tags} defaultDate={rawDate ?? undefined} />
         </div>
         <div className={styles.listColumn}>
           <Suspense>

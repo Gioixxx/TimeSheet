@@ -1,7 +1,7 @@
 import { prisma } from '@/lib/prisma'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
-import { ChevronLeft, Sun, User, Briefcase, Wrench, HeadphonesIcon, Clock } from 'lucide-react'
+import { ChevronLeft, Plus, Sun, User, Briefcase, Wrench, HeadphonesIcon, Clock } from 'lucide-react'
 import Navbar from '@/components/Navbar'
 import EditButton from '@/components/EditButton'
 import DeleteButton from '@/components/DeleteButton'
@@ -85,6 +85,10 @@ export default async function CalendarioGiornoPage({
           Calendario
         </Link>
         <h1 className={styles.dateTitle}>{dateLabel}</h1>
+        <Link href={`/oggi?date=${date}`} className={styles.addLink}>
+          <Plus size={14} />
+          Aggiungi voce
+        </Link>
       </div>
 
       <div className={styles.stats}>

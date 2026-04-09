@@ -1,3 +1,4 @@
+import React from 'react'
 import { prisma } from '@/lib/prisma'
 import Link from 'next/link'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
@@ -58,7 +59,7 @@ const MONTH_NAMES = [
   'Gennaio', 'Febbraio', 'Marzo', 'Aprile', 'Maggio', 'Giugno',
   'Luglio', 'Agosto', 'Settembre', 'Ottobre', 'Novembre', 'Dicembre',
 ]
-const DAY_NAMES = ['Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab', 'Dom']
+const DAY_NAMES = ['Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab', 'Dom', 'Sett.']
 
 export default async function CalendarioPage({
   searchParams,
@@ -93,6 +94,7 @@ export default async function CalendarioPage({
 
   const weeks = buildCalendarWeeks(year, month, dayMap)
   const activeDays = dayMap.size
+  const todayKey = `${now.getUTCFullYear()}-${String(now.getUTCMonth() + 1).padStart(2, '0')}-${String(now.getUTCDate()).padStart(2, '0')}`
 
   // Prev / next month links
   const prevDate = new Date(Date.UTC(year, month - 2, 1))
@@ -156,27 +158,32 @@ export default async function CalendarioPage({
           ))}
         </div>
         <div className={styles.grid}>
-          {weeks.map((week) =>
-            week.map((cell) =>
-              cell.day === null ? (
-                <div
-                  key={cell.key}
-                  className={`${styles.cell} ${styles.cellEmpty}`}
-                />
-              ) : (
-                <Link
-                  key={cell.key}
-                  href={`/calendario/${cell.key}`}
-                  className={`${styles.cell} ${styles.cellClickable} ${cell.minutes > 0 ? colorClass(cell.minutes) : ''}`}
-                >
-                  <span className={styles.cellDay}>{cell.day}</span>
-                  {cell.minutes > 0 && (
-                    <span className={styles.cellHours}>{formatHours(cell.minutes)}</span>
-                  )}
-                </Link>
-              )
-            )
-          )}
+          {weeks.map((week, wi) => (
+            <React.Fragment key={wi}>
+              {week.map((cell) =>
+                cell.day === null ? (
+                  <div
+                    key={cell.key}
+                    className={`${styles.cell} ${styles.cellEmpty}`}
+                  />
+                ) : (
+                  <Link
+                    key={cell.key}
+                    href={`/calendario/${cell.key}`}
+                    className={`${styles.cell} ${styles.cellClickable} ${cell.minutes > 0 ? colorClass(cell.minutes) : ''} ${cell.key === todayKey ? styles.cellToday : ''}`}
+                  >
+                    <span className={styles.cellDay}>{cell.day}</span>
+                    {cell.minutes > 0 && (
+                      <span className={styles.cellHours}>{formatHours(cell.minutes)}</span>
+                    )}
+                  </Link>
+                )
+              )}
+              <div key={`week-total-${wi}`} className={styles.weekTotalCell}>
+                {formatHours(week.reduce((sum, c) => sum + c.minutes, 0))}
+              </div>
+            </React.Fragment>
+          ))}
         </div>
 
         <div className={styles.legend}>
