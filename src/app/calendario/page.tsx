@@ -156,22 +156,26 @@ export default async function CalendarioPage({
           ))}
         </div>
         <div className={styles.grid}>
-          {weeks.map((week, wi) =>
-            week.map((cell) => (
-              <div
-                key={cell.key}
-                className={`${styles.cell} ${!cell.day ? styles.cellEmpty : ''} ${cell.minutes > 0 ? colorClass(cell.minutes) : ''}`}
-              >
-                {cell.day !== null && (
-                  <>
-                    <span className={styles.cellDay}>{cell.day}</span>
-                    {cell.minutes > 0 && (
-                      <span className={styles.cellHours}>{formatHours(cell.minutes)}</span>
-                    )}
-                  </>
-                )}
-              </div>
-            ))
+          {weeks.map((week) =>
+            week.map((cell) =>
+              cell.day === null ? (
+                <div
+                  key={cell.key}
+                  className={`${styles.cell} ${styles.cellEmpty}`}
+                />
+              ) : (
+                <Link
+                  key={cell.key}
+                  href={`/calendario/${cell.key}`}
+                  className={`${styles.cell} ${styles.cellClickable} ${cell.minutes > 0 ? colorClass(cell.minutes) : ''}`}
+                >
+                  <span className={styles.cellDay}>{cell.day}</span>
+                  {cell.minutes > 0 && (
+                    <span className={styles.cellHours}>{formatHours(cell.minutes)}</span>
+                  )}
+                </Link>
+              )
+            )
           )}
         </div>
 

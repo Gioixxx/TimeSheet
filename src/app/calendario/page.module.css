@@ -154,6 +154,18 @@
   background: rgba(0, 0, 0, 0.1);
 }
 
+.cellClickable {
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
+}
+
+.cellClickable:hover {
+  outline: 1px solid rgba(99, 102, 241, 0.45);
+  outline-offset: -1px;
+  filter: brightness(1.14);
+}
+
 .cellDay {
   font-size: 0.82rem;
   font-weight: 600;
