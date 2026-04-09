@@ -10,8 +10,8 @@ export default function DeleteButton({ id }: { id: string }) {
 
   const handleDelete = () => {
     if (!confirm('Eliminare questa voce?')) return
-    startTransition(() => {
-      deleteTimeEntry(id)
+    startTransition(async () => {
+      await deleteTimeEntry(id)
     })
   }
 
