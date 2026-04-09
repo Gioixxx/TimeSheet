@@ -5,13 +5,12 @@
   min-height: 100dvh;
 }
 
-/* Month navigation */
+/* Month navigation (rendered inside Navbar center slot) */
 .monthNav {
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 16px;
-  margin-bottom: 16px;
 }
 
 .monthTitle {

@@ -1,4 +1,5 @@
 'use client'
+import React from 'react'
 import { usePathname } from 'next/navigation'
 import Link from 'next/link'
 import { List, CalendarDays, Sun } from 'lucide-react'
@@ -11,7 +12,7 @@ const MONTH_NAMES = [
 ]
 const DAY_NAMES = ['Domenica', 'Lunedì', 'Martedì', 'Mercoledì', 'Giovedì', 'Venerdì', 'Sabato']
 
-export default function Navbar() {
+export default function Navbar({ centerSlot }: { centerSlot?: React.ReactNode }) {
   const pathname = usePathname()
   const now = new Date()
   const dateLabel = `${DAY_NAMES[now.getDay()]} ${now.getDate()} ${MONTH_NAMES[now.getMonth()]} ${now.getFullYear()}`
@@ -24,7 +25,7 @@ export default function Navbar() {
         </h1>
         <p className={styles.subtitle}>{dateLabel}</p>
       </div>
-      <SearchBar />
+      {centerSlot ?? <SearchBar />}
       <nav className={styles.nav}>
         {pathname === '/' ? (
           <span className={styles.navLinkActive}><List size={14} />Lista</span>

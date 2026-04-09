@@ -160,25 +160,27 @@ export default async function CalendarioPage({
   const currentMonthParam = `${now.getUTCFullYear()}-${String(now.getUTCMonth() + 1).padStart(2, '0')}`
   const isCurrentMonth = `${year}-${String(month).padStart(2, '0')}` === currentMonthParam
 
+  const monthNav = (
+    <div className={styles.monthNav}>
+      <Link href={`/calendario?month=${prevParam}`} className={styles.navBtn} aria-label="Mese precedente">
+        <ChevronLeft size={18} />
+      </Link>
+      <div className={styles.monthTitle}>
+        <span className={styles.monthName}>{MONTH_NAMES[month - 1]}</span>
+        <span className={styles.monthYear}>{year}</span>
+        {!isCurrentMonth && (
+          <Link href="/calendario" className={styles.todayLink}>oggi</Link>
+        )}
+      </div>
+      <Link href={`/calendario?month=${nextParam}`} className={styles.navBtn} aria-label="Mese successivo">
+        <ChevronRight size={18} />
+      </Link>
+    </div>
+  )
+
   return (
     <div className={styles.page}>
-      <Navbar />
-
-      <div className={styles.monthNav}>
-        <Link href={`/calendario?month=${prevParam}`} className={styles.navBtn} aria-label="Mese precedente">
-          <ChevronLeft size={18} />
-        </Link>
-        <div className={styles.monthTitle}>
-          <span className={styles.monthName}>{MONTH_NAMES[month - 1]}</span>
-          <span className={styles.monthYear}>{year}</span>
-          {!isCurrentMonth && (
-            <Link href="/calendario" className={styles.todayLink}>oggi</Link>
-          )}
-        </div>
-        <Link href={`/calendario?month=${nextParam}`} className={styles.navBtn} aria-label="Mese successivo">
-          <ChevronRight size={18} />
-        </Link>
-      </div>
+      <Navbar centerSlot={monthNav} />
 
       <div className={styles.stats}>
         <div className={styles.statCard}>
