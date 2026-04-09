@@ -66,12 +66,18 @@
 /* Stats */
 .stats {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(6, 1fr);
   gap: 8px;
   margin-bottom: 20px;
 }
 
-@media (max-width: 600px) {
+@media (max-width: 900px) {
+  .stats {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 500px) {
   .stats {
     grid-template-columns: repeat(2, 1fr);
   }
@@ -103,6 +109,13 @@
   font-weight: 400;
   color: var(--text-muted);
   margin-left: 2px;
+}
+
+.statSub {
+  font-size: 0.7rem;
+  font-weight: 400;
+  color: var(--text-muted);
+  margin-left: 4px;
 }
 
 /* Calendar */

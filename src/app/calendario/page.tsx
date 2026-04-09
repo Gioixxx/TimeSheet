@@ -55,6 +55,59 @@ function formatHours(minutes: number): string {
   return m === 0 ? `${h}h` : `${h}h${m}m`
 }
 
+// Calcola la data di Pasqua (algoritmo anonimo gregoriano)
+function easterDate(year: number): Date {
+  const a = year % 19
+  const b = Math.floor(year / 100)
+  const c = year % 100
+  const d = Math.floor(b / 4)
+  const e = b % 4
+  const f = Math.floor((b + 8) / 25)
+  const g = Math.floor((b - f + 1) / 3)
+  const h = (19 * a + b - d - g + 15) % 30
+  const i = Math.floor(c / 4)
+  const k = c % 4
+  const l = (32 + 2 * e + 2 * i - h - k) % 7
+  const m = Math.floor((a + 11 * h + 22 * l) / 451)
+  const month = Math.floor((h + l - 7 * m + 114) / 31)
+  const day = ((h + l - 7 * m + 114) % 31) + 1
+  return new Date(Date.UTC(year, month - 1, day))
+}
+
+function italianHolidays(year: number): Set<string> {
+  const pad = (n: number) => String(n).padStart(2, '0')
+  const fixed = [
+    `${year}-01-01`, // Capodanno
+    `${year}-01-06`, // Epifania
+    `${year}-04-25`, // Liberazione
+    `${year}-05-01`, // Festa dei Lavoratori
+    `${year}-06-02`, // Festa della Repubblica
+    `${year}-08-15`, // Ferragosto
+    `${year}-11-01`, // Ognissanti
+    `${year}-12-08`, // Immacolata Concezione
+    `${year}-12-25`, // Natale
+    `${year}-12-26`, // Santo Stefano
+  ]
+  const easter = easterDate(year)
+  const lunedi = new Date(easter)
+  lunedi.setUTCDate(lunedi.getUTCDate() + 1)
+  const luMon = `${lunedi.getUTCFullYear()}-${pad(lunedi.getUTCMonth() + 1)}-${pad(lunedi.getUTCDate())}`
+  return new Set([...fixed, luMon])
+}
+
+function countWorkingDays(year: number, month: number): number {
+  const holidays = italianHolidays(year)
+  const daysInMonth = new Date(Date.UTC(year, month, 0)).getUTCDate()
+  let count = 0
+  for (let d = 1; d <= daysInMonth; d++) {
+    const dow = new Date(Date.UTC(year, month - 1, d)).getUTCDay()
+    if (dow === 0 || dow === 6) continue
+    const key = `${year}-${String(month).padStart(2, '0')}-${String(d).padStart(2, '0')}`
+    if (!holidays.has(key)) count++
+  }
+  return count
+}
+
 const MONTH_NAMES = [
   'Gennaio', 'Febbraio', 'Marzo', 'Aprile', 'Maggio', 'Giugno',
   'Luglio', 'Agosto', 'Settembre', 'Ottobre', 'Novembre', 'Dicembre',
@@ -94,6 +147,8 @@ export default async function CalendarioPage({
 
   const weeks = buildCalendarWeeks(year, month, dayMap)
   const activeDays = dayMap.size
+  const workingDays = countWorkingDays(year, month)
+  const expectedMinutes = workingDays * 8 * 60
   const todayKey = `${now.getUTCFullYear()}-${String(now.getUTCMonth() + 1).padStart(2, '0')}-${String(now.getUTCDate()).padStart(2, '0')}`
 
   // Prev / next month links
@@ -131,8 +186,23 @@ export default async function CalendarioPage({
           <p className={styles.statValue}>{(totalMinutes / 60).toFixed(1)}<span className={styles.statUnit}>h</span></p>
         </div>
         <div className={styles.statCard}>
+          <p className={styles.statLabel}>Ore attese</p>
+          <p className={styles.statValue}>
+            {(expectedMinutes / 60).toFixed(0)}
+            <span className={styles.statUnit}>h</span>
+            <span className={styles.statSub}>{workingDays}gg lav.</span>
+          </p>
+        </div>
+        <div className={styles.statCard}>
+          <p className={styles.statLabel}>Avanzamento</p>
+          <p className={styles.statValue}>
+            {expectedMinutes > 0 ? Math.round((totalMinutes / expectedMinutes) * 100) : 0}
+            <span className={styles.statUnit}>%</span>
+          </p>
+        </div>
+        <div className={styles.statCard}>
           <p className={styles.statLabel}>Giorni attivi</p>
-          <p className={styles.statValue}>{activeDays}</p>
+          <p className={styles.statValue}>{activeDays}<span className={styles.statSub}>/ {workingDays}</span></p>
         </div>
         <div className={styles.statCard}>
           <p className={styles.statLabel}>Media / giorno attivo</p>
