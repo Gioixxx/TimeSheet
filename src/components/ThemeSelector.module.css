@@ -1,0 +1,142 @@
+.container {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.trigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  background: transparent;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: none;
+  cursor: pointer;
+  transition: color 0.2s, background 0.2s, transform 0.2s;
+}
+
+.trigger:hover {
+  color: var(--text);
+  background: var(--bg-surface-hover);
+}
+
+.triggerActive {
+  color: var(--primary);
+  background: var(--primary-glow);
+}
+
+.dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  width: 240px;
+  background: var(--bg-base);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-card);
+  border-radius: 16px;
+  padding: 12px;
+  z-index: 100;
+  animation: slideDown 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-8px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.sectionTitle {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 600;
+  color: var(--text-muted);
+  padding: 0 4px;
+}
+
+.grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.swatch {
+  position: relative;
+  width: 42px;
+  height: 32px;
+  border-radius: 8px;
+  border: 2px solid transparent;
+  background: var(--bg-surface);
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.swatch.active {
+  border-color: var(--primary);
+  background: var(--primary-glow);
+}
+
+.swatch:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  background: var(--bg-surface-hover);
+}
+
+.swatchColors {
+  width: 100%;
+  height: 100%;
+  border-radius: 4px;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--border);
+}
+
+.swatchBg {
+  flex: 1;
+  background: var(--theme-bg);
+}
+
+.swatchPrimary {
+  height: 8px;
+  background: var(--theme-primary);
+}
+
+.checkIcon {
+  position: absolute;
+  color: white;
+  background: var(--theme-primary);
+  border-radius: 50%;
+  padding: 2px;
+  top: -6px;
+  right: -6px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.divider {
+  width: 100%;
+  height: 1px;
+  background: var(--border);
+}

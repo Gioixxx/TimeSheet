@@ -4,6 +4,7 @@ import { usePathname } from 'next/navigation'
 import Link from 'next/link'
 import { List, CalendarDays, Sun } from 'lucide-react'
 import SearchBar from './SearchBar'
+import { ThemeSelector } from './ThemeSelector'
 import styles from './Navbar.module.css'
 
 const MONTH_NAMES = [
@@ -42,6 +43,7 @@ export default function Navbar({ centerSlot }: { centerSlot?: React.ReactNode })
         ) : (
           <Link href="/oggi" className={styles.navLink}><Sun size={14} />Oggi</Link>
         )}
+        <ThemeSelector />
       </nav>
     </header>
   )
