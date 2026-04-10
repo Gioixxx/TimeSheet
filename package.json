@@ -19,6 +19,7 @@
     "@google/generative-ai": "^0.24.1",
     "@hookform/resolvers": "^3.9.0",
     "@prisma/client": "^6.7.0",
+    "framer-motion": "^12.38.0",
     "html-to-text": "^9.0.5",
     "imapflow": "^1.2.18",
     "lucide-react": "^0.469.0",

@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { Palette, Check } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { themes, type Theme } from '@/lib/themes';
 import { useTheme } from './ThemeProvider';
 import styles from './ThemeSelector.module.css';
@@ -35,61 +36,69 @@ export function ThemeSelector() {
         <Palette size={16} />
       </button>
 
-      {isOpen && (
-        <div className={styles.dropdown}>
-          <div className={styles.section}>
-            <span className={styles.sectionTitle}>Tema Scuro</span>
-            <div className={styles.grid}>
-              {darkThemes.map((t) => (
-                <button
-                  key={t.id}
-                  className={`${styles.swatch} ${theme.id === t.id ? styles.active : ''}`}
-                  style={{ '--theme-primary': t.primary, '--theme-bg': t.vars['--bg-base'] } as React.CSSProperties}
-                  onClick={() => {
-                    setTheme(t);
-                    setIsOpen(false);
-                  }}
-                  title={t.name}
-                  aria-label={t.name}
-                >
-                  <div className={styles.swatchColors}>
-                    <div className={styles.swatchBg} />
-                    <div className={styles.swatchPrimary} />
-                  </div>
-                  {theme.id === t.id && <Check size={12} className={styles.checkIcon} />}
-                </button>
-              ))}
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div 
+            className={styles.dropdown}
+            initial={{ opacity: 0, scale: 0.95, y: -10 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.95, y: -10 }}
+            transition={{ type: 'spring', stiffness: 300, damping: 25 }}
+          >
+            <div className={styles.section}>
+              <span className={styles.sectionTitle}>Tema Scuro</span>
+              <div className={styles.grid}>
+                {darkThemes.map((t) => (
+                  <button
+                    key={t.id}
+                    className={`${styles.swatch} ${theme.id === t.id ? styles.active : ''}`}
+                    style={{ '--theme-primary': t.primary, '--theme-bg': t.vars['--bg-base'] } as React.CSSProperties}
+                    onClick={() => {
+                      setTheme(t);
+                      setIsOpen(false);
+                    }}
+                    title={t.name}
+                    aria-label={t.name}
+                  >
+                    <div className={styles.swatchColors}>
+                      <div className={styles.swatchBg} />
+                      <div className={styles.swatchPrimary} />
+                    </div>
+                    {theme.id === t.id && <Check size={12} className={styles.checkIcon} />}
+                  </button>
+                ))}
+              </div>
             </div>
-          </div>
-          
-          <div className={styles.divider} />
-          
-          <div className={styles.section}>
-            <span className={styles.sectionTitle}>Tema Chiaro</span>
-            <div className={styles.grid}>
-              {lightThemes.map((t) => (
-                <button
-                  key={t.id}
-                  className={`${styles.swatch} ${styles.swatchLight} ${theme.id === t.id ? styles.active : ''}`}
-                  style={{ '--theme-primary': t.primary, '--theme-bg': t.vars['--bg-base'] } as React.CSSProperties}
-                  onClick={() => {
-                    setTheme(t);
-                    setIsOpen(false);
-                  }}
-                  title={t.name}
-                  aria-label={t.name}
-                >
-                  <div className={styles.swatchColors}>
-                    <div className={styles.swatchBg} />
-                    <div className={styles.swatchPrimary} />
-                  </div>
-                  {theme.id === t.id && <Check size={12} className={styles.checkIcon} />}
-                </button>
-              ))}
+            
+            <div className={styles.divider} />
+            
+            <div className={styles.section}>
+              <span className={styles.sectionTitle}>Tema Chiaro</span>
+              <div className={styles.grid}>
+                {lightThemes.map((t) => (
+                  <button
+                    key={t.id}
+                    className={`${styles.swatch} ${styles.swatchLight} ${theme.id === t.id ? styles.active : ''}`}
+                    style={{ '--theme-primary': t.primary, '--theme-bg': t.vars['--bg-base'] } as React.CSSProperties}
+                    onClick={() => {
+                      setTheme(t);
+                      setIsOpen(false);
+                    }}
+                    title={t.name}
+                    aria-label={t.name}
+                  >
+                    <div className={styles.swatchColors}>
+                      <div className={styles.swatchBg} />
+                      <div className={styles.swatchPrimary} />
+                    </div>
+                    {theme.id === t.id && <Check size={12} className={styles.checkIcon} />}
+                  </button>
+                ))}
+              </div>
             </div>
-          </div>
-        </div>
-      )}
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

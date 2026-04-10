@@ -1,4 +1,7 @@
+'use client';
+
 import { List, User, Briefcase, Calendar, Wrench, HeadphonesIcon, Sun, Clock } from 'lucide-react'
+import { motion, AnimatePresence } from 'framer-motion'
 import DeleteButton from './DeleteButton'
 import EditButton from './EditButton'
 import MonthExportControls from './MonthExportControls'
@@ -80,11 +83,20 @@ export default function TimeEntryList({
         <p className={styles.empty}>Nessun inserimento ancora. Aggiungi la prima voce!</p>
       ) : (
         <ul className={styles.list}>
-          {entries.map((entry) => {
-            const { label, Icon } = activityMeta(entry.activityType)
-            return (
-              <li key={entry.id} className={styles.entry}>
-                <div className={styles.entryTop}>
+          <AnimatePresence mode="popLayout">
+            {entries.map((entry) => {
+              const { label, Icon } = activityMeta(entry.activityType)
+              return (
+                <motion.li 
+                  layout
+                  initial={{ opacity: 0, y: 15 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.95, transition: { duration: 0.15 } }}
+                  transition={{ type: 'spring', stiffness: 350, damping: 25 }}
+                  key={entry.id} 
+                  className={styles.entry}
+                >
+                  <div className={styles.entryTop}>
                   <span className={styles.entryTitle}>{entry.title}</span>
                   <div className={styles.entryRight}>
                     <span className={styles.activityBadge} title={label}>
@@ -145,9 +157,10 @@ export default function TimeEntryList({
                     ))}
                   </div>
                 )}
-              </li>
-            )
-          })}
+                </motion.li>
+              )
+            })}
+          </AnimatePresence>
         </ul>
       )}
 
