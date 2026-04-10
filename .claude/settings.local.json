@@ -17,7 +17,9 @@
       "Bash(gh release create v1.0.0 --repo Gioixxx/TimeSheet --title 'v1.0.0 — Prima release stabile' --notes ':*)",
       "Bash(node -e ':*)",
       "Bash(sqlite3 prisma/timesheet.db \"SELECT id, title, date FROM TimeEntry ORDER BY date DESC LIMIT 5;\")",
-      "Bash(sqlite3.exe prisma/timesheet.db \"SELECT id, title, date FROM TimeEntry ORDER BY date DESC LIMIT 5;\")"
+      "Bash(sqlite3.exe prisma/timesheet.db \"SELECT id, title, date FROM TimeEntry ORDER BY date DESC LIMIT 5;\")",
+      "Bash(grep -l \"\\\\.module\\\\.css\" /c/Users/Gioix/OneDrive/Desktop/Progetti/timesheet/src/components/*.tsx)",
+      "Bash(grep -r \"color\\\\|Color\\\\|COLOR\" /c/Users/Gioix/OneDrive/Desktop/Progetti/timesheet/src/components/*.tsx)"
     ]
   }
 }

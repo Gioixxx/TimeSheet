@@ -25,7 +25,8 @@ function csvCell(value: string): string {
 }
 
 function formatDateUtc(d: Date): string {
-  return d.toISOString().slice(0, 10)
+  const [year, month, day] = d.toISOString().slice(0, 10).split('-')
+  return `${day}/${month}/${year}`
 }
 
 export async function GET(request: NextRequest) {
@@ -68,7 +69,7 @@ export async function GET(request: NextRequest) {
     'titolo',
     'descrizione',
     'tipo_attivita',
-    'durata_minuti',
+    'durata_ore',
     'cliente',
     'progetto',
     'tag',
@@ -80,7 +81,7 @@ export async function GET(request: NextRequest) {
       csvCell(e.title),
       csvCell(e.description ?? ''),
       csvCell(activityTypeCsvLabel(e.activityType)),
-      String(e.duration),
+      String(Math.round((e.duration / 60) * 100) / 100),
       csvCell(e.client?.name ?? ''),
       csvCell(e.project?.name ?? ''),
       csvCell(tagStr),

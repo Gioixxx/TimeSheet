@@ -11,25 +11,32 @@ function getMonthBounds(year: number, month: number) {
   return { start, end }
 }
 
-function buildCalendarWeeks(year: number, month: number, dayMap: Map<string, number>) {
+function buildCalendarWeeks(
+  year: number,
+  month: number,
+  dayMap: Map<string, number>,
+  holidays: Set<string>,
+) {
   const firstDay = new Date(Date.UTC(year, month - 1, 1))
   const daysInMonth = new Date(Date.UTC(year, month, 0)).getUTCDate()
 
   // ISO week: Monday = 0 ... Sunday = 6
   const startDow = (firstDay.getUTCDay() + 6) % 7
 
-  const cells: Array<{ day: number | null; key: string; minutes: number }> = []
+  const cells: Array<{ day: number | null; key: string; minutes: number; isWeekend: boolean; isHoliday: boolean }> = []
 
   for (let i = 0; i < startDow; i++) {
-    cells.push({ day: null, key: `empty-${i}`, minutes: 0 })
+    cells.push({ day: null, key: `empty-${i}`, minutes: 0, isWeekend: false, isHoliday: false })
   }
   for (let d = 1; d <= daysInMonth; d++) {
     const key = `${year}-${String(month).padStart(2, '0')}-${String(d).padStart(2, '0')}`
-    cells.push({ day: d, key, minutes: dayMap.get(key) ?? 0 })
+    const dow = new Date(Date.UTC(year, month - 1, d)).getUTCDay() // 0=Dom, 6=Sab
+    const isWeekend = dow === 0 || dow === 6
+    cells.push({ day: d, key, minutes: dayMap.get(key) ?? 0, isWeekend, isHoliday: holidays.has(key) })
   }
   // Fill trailing empty cells to complete last row
   while (cells.length % 7 !== 0) {
-    cells.push({ day: null, key: `end-${cells.length}`, minutes: 0 })
+    cells.push({ day: null, key: `end-${cells.length}`, minutes: 0, isWeekend: false, isHoliday: false })
   }
 
   const weeks: typeof cells[] = []
@@ -145,7 +152,8 @@ export default async function CalendarioPage({
     if (next > busiestDay.minutes) busiestDay = { key, minutes: next }
   }
 
-  const weeks = buildCalendarWeeks(year, month, dayMap)
+  const holidays = italianHolidays(year)
+  const weeks = buildCalendarWeeks(year, month, dayMap, holidays)
   const activeDays = dayMap.size
   const workingDays = countWorkingDays(year, month)
   const expectedMinutes = workingDays * 8 * 60
@@ -242,9 +250,17 @@ export default async function CalendarioPage({
                   <Link
                     key={cell.key}
                     href={`/calendario/${cell.key}`}
-                    className={`${styles.cell} ${styles.cellClickable} ${cell.minutes > 0 ? colorClass(cell.minutes) : ''} ${cell.key === todayKey ? styles.cellToday : ''}`}
+                    className={[
+                      styles.cell,
+                      styles.cellClickable,
+                      cell.minutes > 0 ? colorClass(cell.minutes) : '',
+                      cell.key === todayKey ? styles.cellToday : '',
+                      cell.isHoliday ? styles.cellHoliday : '',
+                      cell.isWeekend && !cell.isHoliday ? styles.cellWeekend : '',
+                    ].filter(Boolean).join(' ')}
                   >
                     <span className={styles.cellDay}>{cell.day}</span>
+                    {cell.isHoliday && <span className={styles.cellFestivo}>festivo</span>}
                     {cell.minutes > 0 && (
                       <span className={styles.cellHours}>{formatHours(cell.minutes)}</span>
                     )}
@@ -263,6 +279,8 @@ export default async function CalendarioPage({
           <span className={styles.legendItem}><span className={`${styles.legendDot} ${styles.colorMid}`} /> 2–5h</span>
           <span className={styles.legendItem}><span className={`${styles.legendDot} ${styles.colorHigh}`} /> 5–8h</span>
           <span className={styles.legendItem}><span className={`${styles.legendDot} ${styles.colorFull}`} /> 8h+</span>
+          <span className={styles.legendItem}><span className={`${styles.legendDot} ${styles.cellWeekend}`} /> weekend</span>
+          <span className={styles.legendItem}><span className={`${styles.legendDot} ${styles.cellHoliday}`} /> festivo</span>
         </div>
       </div>
     </div>
