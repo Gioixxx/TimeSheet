@@ -173,6 +173,69 @@ export async function logTaskAsEntry(
   revalidatePath('/')
 }
 
+// ── Reminder actions ─────────────────────────────────────────────────────────
+
+const reminderSchema = z.object({
+  title: z.string().min(1, 'Il titolo è obbligatorio'),
+  notes: z.string().optional(),
+  scheduledAt: z.string().datetime(),
+  recurrence: z.enum(['DAILY', 'WEEKLY', 'MONTHLY', 'YEARLY']).nullable().optional(),
+  recurrenceEnd: z.string().datetime().nullable().optional(),
+})
+
+export async function createReminder(raw: unknown) {
+  const data = reminderSchema.parse(raw)
+  await prisma.reminder.create({
+    data: {
+      title: data.title.trim(),
+      notes: data.notes?.trim() || null,
+      scheduledAt: new Date(data.scheduledAt),
+      recurrence: data.recurrence ?? null,
+      recurrenceEnd: data.recurrenceEnd ? new Date(data.recurrenceEnd) : null,
+    },
+  })
+  revalidatePath('/')
+  revalidatePath('/oggi')
+  revalidatePath('/calendario', 'layout')
+}
+
+export async function updateReminder(id: string, raw: unknown) {
+  const data = reminderSchema.parse(raw)
+  await prisma.reminder.update({
+    where: { id },
+    data: {
+      title: data.title.trim(),
+      notes: data.notes?.trim() || null,
+      scheduledAt: new Date(data.scheduledAt),
+      recurrence: data.recurrence ?? null,
+      recurrenceEnd: data.recurrenceEnd ? new Date(data.recurrenceEnd) : null,
+      // Reset notifiedAt così la prossima occorrenza viene ricalcolata
+      notifiedAt: null,
+    },
+  })
+  revalidatePath('/')
+  revalidatePath('/oggi')
+  revalidatePath('/calendario', 'layout')
+}
+
+export async function deleteReminder(id: string) {
+  await prisma.reminder.delete({ where: { id } })
+  revalidatePath('/')
+  revalidatePath('/oggi')
+  revalidatePath('/calendario', 'layout')
+}
+
+export async function completeReminder(id: string) {
+  await prisma.reminder.update({
+    where: { id },
+    data: { isCompleted: true },
+  })
+  revalidatePath('/')
+  revalidatePath('/oggi')
+  revalidatePath('/calendario', 'layout')
+}
+
+
 // ── Email polling ────────────────────────────────────────────────────────────
 
 import { pollEmails, type PollResult } from '@/lib/email-poller'

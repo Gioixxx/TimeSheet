@@ -172,6 +172,26 @@
   border-left: 1px solid var(--border);
 }
 
+/* ── Reminder badge nel calendario ──────────────────────────────────── */
+.cellReminders {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 0.6rem;
+  font-weight: 600;
+  color: var(--primary-hover);
+  background: var(--primary-glow);
+  border: 1px solid rgba(99, 102, 241, 0.25);
+  border-radius: 99px;
+  padding: 1px 5px;
+  max-width: 100%;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  line-height: 1.4;
+  margin-top: auto;
+}
+
 .cellEmpty {
   background: rgba(0, 0, 0, 0.1);
 }

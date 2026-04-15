@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import SwRegister from "./sw-register";
 import { ThemeProvider } from "@/components/ThemeProvider";
+import NotificationManager from "@/components/NotificationManager";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -42,6 +43,7 @@ export default function RootLayout({
           {children}
         </ThemeProvider>
         <SwRegister />
+        <NotificationManager />
       </body>
     </html>
   );

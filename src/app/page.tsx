@@ -4,6 +4,7 @@ import TimeEntryForm from '@/components/TimeEntryForm'
 import TimeEntryList from '@/components/TimeEntryList'
 import FilterBar from '@/components/FilterBar'
 import TaskBoard from '@/components/TaskBoard'
+import ReminderList from '@/components/ReminderList'
 import Navbar from '@/components/Navbar'
 import styles from './page.module.css'
 
@@ -141,6 +142,7 @@ export default async function Home({
           <TimeEntryForm clients={clients} projects={projects} tags={tags} />
         </div>
         <div className={styles.listColumn}>
+          <ReminderList />
           <TaskBoard />
           <Suspense>
             <FilterBar clients={clients} />

@@ -1,4 +1,4 @@
-const { app, BrowserWindow } = require("electron");
+const { app, BrowserWindow, Tray, Menu, Notification, nativeImage } = require("electron");
 const path = require("path");
 const fs = require("fs");
 const { spawn } = require("child_process");
@@ -72,6 +72,10 @@ function findServerScript(standaloneRoot) {
 let mainWindow = null;
 /** @type {import('child_process').ChildProcess | null} */
 let serverProcess = null;
+/** @type {Tray | null} */
+let tray = null;
+/** @type {ReturnType<typeof setInterval> | null} */
+let reminderPollInterval = null;
 
 function waitForServer(port, maxAttempts = 60) {
   return new Promise((resolve, reject) => {
@@ -95,6 +99,99 @@ function waitForServer(port, maxAttempts = 60) {
   });
 }
 
+function trayIconPath() {
+  return app.isPackaged
+    ? path.join(process.resourcesPath, "standalone", "public", "icon.svg")
+    : path.join(__dirname, "..", "public", "icon.svg");
+}
+
+function createTray(port) {
+  let icon;
+  try {
+    icon = nativeImage.createFromPath(trayIconPath());
+    if (!icon.isEmpty()) {
+      icon = icon.resize({ width: 16, height: 16 });
+    }
+  } catch {
+    icon = nativeImage.createEmpty();
+  }
+
+  tray = new Tray(icon);
+  tray.setToolTip("Timesheet");
+
+  const buildMenu = () =>
+    Menu.buildFromTemplate([
+      {
+        label: "Apri Timesheet",
+        click: () => {
+          if (mainWindow) {
+            mainWindow.show();
+            mainWindow.focus();
+          } else {
+            createWindow(port);
+          }
+        },
+      },
+      { type: "separator" },
+      {
+        label: "Esci",
+        click: () => {
+          app.isQuitting = true;
+          app.quit();
+        },
+      },
+    ]);
+
+  tray.setContextMenu(buildMenu());
+
+  tray.on("click", () => {
+    if (mainWindow) {
+      if (mainWindow.isVisible() && !mainWindow.isMinimized()) {
+        mainWindow.focus();
+      } else {
+        mainWindow.show();
+        mainWindow.focus();
+      }
+    } else {
+      createWindow(port);
+    }
+  });
+}
+
+function startReminderPolling(port) {
+  const upcomingUrl = `http://127.0.0.1:${port}/api/reminders/upcoming`;
+
+  const poll = () =>
+    fetch(upcomingUrl)
+      .then((r) => r.json())
+      .then((reminders) => {
+        if (!Array.isArray(reminders)) return;
+        for (const reminder of reminders) {
+          if (!Notification.isSupported()) break;
+          const notif = new Notification({
+            title: reminder.title,
+            body: reminder.notes ?? "",
+            icon: trayIconPath(),
+          });
+          notif.on("click", () => {
+            if (mainWindow) {
+              mainWindow.show();
+              mainWindow.focus();
+            }
+          });
+          notif.show();
+          // Marca come notificato (fire-and-forget)
+          fetch(`http://127.0.0.1:${port}/api/reminders/${reminder.id}/notified`, {
+            method: "POST",
+          }).catch(() => {});
+        }
+      })
+      .catch(() => {});
+
+  poll();
+  reminderPollInterval = setInterval(poll, 60 * 1000);
+}
+
 function createWindow(port) {
   mainWindow = new BrowserWindow({
     width: 1280,
@@ -109,6 +206,13 @@ function createWindow(port) {
   });
   mainWindow.once("ready-to-show", () => mainWindow?.show());
   mainWindow.loadURL(`http://127.0.0.1:${port}`);
+  // Nasconde nel tray invece di chiudersi (a meno che non sia una chiusura esplicita)
+  mainWindow.on("close", (e) => {
+    if (!app.isQuitting) {
+      e.preventDefault();
+      mainWindow.hide();
+    }
+  });
   mainWindow.on("closed", () => {
     mainWindow = null;
   });
@@ -181,7 +285,10 @@ app.whenReady().then(() => {
 
   waitForServer(port)
     .then(() => {
+      app.isQuitting = false;
       createWindow(port);
+      createTray(port);
+      startReminderPolling(port);
 
       // Email polling: avvio immediato + ogni 5 minuti
       const emailPollUrl = `http://127.0.0.1:${port}/api/email-poll`;
@@ -204,11 +311,16 @@ app.whenReady().then(() => {
 });
 
 app.on("window-all-closed", () => {
-  stopServer();
-  app.quit();
+  // Non usciamo: l'icona nel tray mantiene l'app attiva per i reminder in background
+  // L'uscita avviene solo tramite "Esci" nel menu del tray (che setta app.isQuitting = true)
 });
 
 app.on("before-quit", () => {
+  app.isQuitting = true;
+  if (reminderPollInterval) {
+    clearInterval(reminderPollInterval);
+    reminderPollInterval = null;
+  }
   stopServer();
 });
 

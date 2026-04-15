@@ -1,0 +1,559 @@
+/* ── Board container ─────────────────────────────────────────────────── */
+.board {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 12px 14px;
+  flex-shrink: 0;
+  margin-bottom: 12px;
+  transition: border-color 0.2s;
+}
+
+.board:hover {
+  border-color: rgba(99, 102, 241, 0.2);
+}
+
+.boardHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.boardTitle {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+}
+
+.boardTitle svg {
+  color: var(--primary);
+}
+
+.boardCount {
+  background: var(--primary-glow);
+  border: 1px solid rgba(99, 102, 241, 0.3);
+  border-radius: 99px;
+  color: var(--primary-hover);
+  font-size: 0.68rem;
+  font-weight: 700;
+  padding: 1px 7px;
+}
+
+.boardEmpty {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  text-align: center;
+  padding: 8px 0 4px;
+}
+
+/* ── Reminder list ───────────────────────────────────────────────────── */
+.reminderList {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.reminderItem {
+  background: rgba(99, 102, 241, 0.04);
+  border: 1px solid rgba(99, 102, 241, 0.15);
+  border-left: 3px solid var(--primary);
+  border-radius: var(--radius-sm);
+  padding: 8px 10px;
+  animation: fadeInUp 0.25s ease both;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.reminderItem:hover {
+  border-color: rgba(99, 102, 241, 0.3);
+  background: rgba(99, 102, 241, 0.07);
+}
+
+.reminderPast {
+  border-left-color: var(--danger);
+  border-color: rgba(239, 68, 68, 0.2);
+  background: rgba(239, 68, 68, 0.04);
+}
+
+.reminderPast:hover {
+  border-color: rgba(239, 68, 68, 0.35);
+  background: rgba(239, 68, 68, 0.07);
+}
+
+.reminderTop {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 8px;
+  margin-bottom: 2px;
+}
+
+.reminderTitle {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text);
+  flex: 1;
+  line-height: 1.3;
+}
+
+.reminderTime {
+  font-size: 0.68rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+  flex-shrink: 0;
+  font-variant-numeric: tabular-nums;
+  padding-top: 1px;
+}
+
+.reminderTimeOverdue {
+  color: var(--danger);
+  font-weight: 700;
+}
+
+.reminderNotes {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  margin: 3px 0 4px;
+  line-height: 1.4;
+}
+
+.reminderNotifiedBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 0.62rem;
+  color: #10b981;
+  background: rgba(16, 185, 129, 0.1);
+  border: 1px solid rgba(16, 185, 129, 0.2);
+  border-radius: 99px;
+  padding: 1px 6px;
+  margin-bottom: 4px;
+}
+
+.reminderActions {
+  display: flex;
+  gap: 4px;
+  margin-top: 5px;
+}
+
+.reminderCompleteBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  background: rgba(16, 185, 129, 0.1);
+  border: 1px solid rgba(16, 185, 129, 0.2);
+  border-radius: var(--radius-xs);
+  color: #10b981;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.68rem;
+  font-weight: 600;
+  padding: 2px 8px;
+  transition: background 0.12s;
+}
+
+.reminderCompleteBtn:hover:not(:disabled) {
+  background: rgba(16, 185, 129, 0.2);
+}
+
+.reminderDeleteBtn {
+  background: none;
+  border: none;
+  color: rgba(239, 68, 68, 0.4);
+  cursor: pointer;
+  padding: 2px 5px;
+  border-radius: var(--radius-xs);
+  display: flex;
+  align-items: center;
+  transition: color 0.15s;
+}
+
+.reminderDeleteBtn:hover:not(:disabled) {
+  color: var(--danger);
+}
+
+.reminderCompleteBtn:disabled,
+.reminderDeleteBtn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* ── Add button & form ───────────────────────────────────────────────── */
+.addBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: var(--primary-glow);
+  border: 1px solid rgba(99, 102, 241, 0.25);
+  border-radius: var(--radius-sm);
+  color: var(--primary-hover);
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 4px 10px;
+  transition: background 0.15s;
+}
+
+.addBtn:hover {
+  background: rgba(99, 102, 241, 0.2);
+}
+
+.addForm {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  background: rgba(99, 102, 241, 0.04);
+  border: 1px solid rgba(99, 102, 241, 0.2);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+  margin-top: 8px;
+}
+
+.addInput {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(99, 102, 241, 0.2);
+  border-radius: var(--radius-xs);
+  color: var(--text);
+  font-family: inherit;
+  font-size: 0.8rem;
+  padding: 6px 9px;
+  outline: none;
+  width: 100%;
+  transition: border-color 0.15s;
+}
+
+.addInput::placeholder {
+  color: var(--text-placeholder);
+}
+
+.addInput:focus {
+  border-color: rgba(99, 102, 241, 0.5);
+}
+
+/* Override per datetime-local - rispetta il color scheme */
+.addInput[type="datetime-local"] {
+  color-scheme: dark;
+}
+
+.addRow {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.quickButtons {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.quickLabel {
+  font-size: 0.65rem;
+  color: var(--text-muted);
+}
+
+.quickBtn {
+  background: rgba(99, 102, 241, 0.1);
+  border: 1px solid rgba(99, 102, 241, 0.2);
+  border-radius: var(--radius-xs);
+  color: var(--primary-hover);
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.68rem;
+  padding: 2px 7px;
+  transition: background 0.12s;
+  white-space: nowrap;
+}
+
+.quickBtn:hover {
+  background: rgba(99, 102, 241, 0.2);
+}
+
+.addActions {
+  display: flex;
+  gap: 6px;
+  justify-content: flex-end;
+}
+
+.addCancelBtn {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xs);
+  color: var(--text-muted);
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.78rem;
+  padding: 5px 10px;
+  transition: background 0.15s;
+}
+
+.addCancelBtn:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.07);
+}
+
+.addSaveBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: var(--primary-glow);
+  border: 1px solid rgba(99, 102, 241, 0.4);
+  border-radius: var(--radius-xs);
+  color: var(--primary-hover);
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 5px 10px;
+  transition: background 0.15s;
+}
+
+.addSaveBtn:hover:not(:disabled) {
+  background: rgba(99, 102, 241, 0.3);
+}
+
+.addCancelBtn:disabled,
+.addSaveBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ── Recurrence badge ────────────────────────────────────────────────── */
+.recurrenceBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 0.62rem;
+  color: var(--primary-hover);
+  background: var(--primary-glow);
+  border: 1px solid rgba(99, 102, 241, 0.25);
+  border-radius: 99px;
+  padding: 1px 6px;
+  flex-shrink: 0;
+}
+
+/* ── Recurrence select ───────────────────────────────────────────────── */
+.recurrenceRow {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.addSelect {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(99, 102, 241, 0.2);
+  border-radius: var(--radius-xs);
+  color: var(--text);
+  font-family: inherit;
+  font-size: 0.8rem;
+  padding: 6px 9px;
+  outline: none;
+  flex: 1;
+  min-width: 120px;
+  transition: border-color 0.15s;
+  cursor: pointer;
+}
+
+.addSelect:focus {
+  border-color: rgba(99, 102, 241, 0.5);
+}
+
+/* ── Edit dialog ─────────────────────────────────────────────────────── */
+.editDialog {
+  background: var(--bg-card, #0f1120);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-card);
+  color: var(--text);
+  max-width: 440px;
+  width: calc(100vw - 32px);
+  padding: 0;
+  outline: none;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  margin: 0;
+}
+
+.editDialog::backdrop {
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+}
+
+.editHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px 12px;
+  border-bottom: 1px solid var(--border);
+}
+
+.editTitle {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--text);
+  margin: 0;
+}
+
+.editCloseBtn {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 4px;
+  border-radius: var(--radius-xs);
+  display: flex;
+  align-items: center;
+  transition: color 0.15s;
+}
+
+.editCloseBtn:hover {
+  color: var(--text);
+}
+
+.editForm {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 14px 16px;
+}
+
+.editLabel {
+  font-size: 0.65rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 2px;
+  display: block;
+}
+
+.editField {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.editInput {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  font-family: inherit;
+  font-size: 0.82rem;
+  padding: 7px 10px;
+  width: 100%;
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.editInput:focus {
+  border-color: rgba(99, 102, 241, 0.5);
+  box-shadow: 0 0 0 3px var(--primary-glow);
+}
+
+.editInput[type="datetime-local"] {
+  color-scheme: dark;
+}
+
+.editSelect {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  font-family: inherit;
+  font-size: 0.82rem;
+  padding: 7px 10px;
+  width: 100%;
+  outline: none;
+  cursor: pointer;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.editSelect:focus {
+  border-color: rgba(99, 102, 241, 0.5);
+  box-shadow: 0 0 0 3px var(--primary-glow);
+}
+
+.editActions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  margin-top: 4px;
+}
+
+.editCancelBtn {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text-muted);
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.82rem;
+  padding: 7px 12px;
+  transition: background 0.15s;
+}
+
+.editCancelBtn:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.07);
+}
+
+.editSaveBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: var(--primary);
+  border: none;
+  border-radius: var(--radius-sm);
+  color: #fff;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.82rem;
+  font-weight: 600;
+  padding: 7px 14px;
+  transition: background 0.15s;
+}
+
+.editSaveBtn:hover:not(:disabled) {
+  background: var(--primary-hover);
+}
+
+.editCancelBtn:disabled,
+.editSaveBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ── Edit button (in ReminderActions) ───────────────────────────────── */
+.reminderEditBtn {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 2px 5px;
+  border-radius: var(--radius-xs);
+  display: flex;
+  align-items: center;
+  transition: color 0.15s;
+}
+
+.reminderEditBtn:hover:not(:disabled) {
+  color: var(--text);
+}
+
+.reminderEditBtn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}

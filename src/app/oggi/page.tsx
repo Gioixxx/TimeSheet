@@ -3,6 +3,7 @@ import { Suspense } from 'react'
 import { Sun, User, Briefcase, Wrench, HeadphonesIcon, Clock } from 'lucide-react'
 import TimeEntryForm from '@/components/TimeEntryForm'
 import TaskBoard from '@/components/TaskBoard'
+import ReminderList from '@/components/ReminderList'
 import EditButton from '@/components/EditButton'
 import DeleteButton from '@/components/DeleteButton'
 import Navbar from '@/components/Navbar'
@@ -120,6 +121,7 @@ export default async function OggiPage({
           <TimeEntryForm clients={clients} projects={projects} tags={tags} defaultDate={rawDate ?? undefined} />
         </div>
         <div className={styles.listColumn}>
+          <ReminderList />
           <Suspense>
             <TaskBoard />
           </Suspense>

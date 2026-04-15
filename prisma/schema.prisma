@@ -77,3 +77,18 @@ model ProcessedEmail {
   entryId     String?
   error       String?
 }
+
+model Reminder {
+  id             String    @id @default(cuid())
+  title          String
+  notes          String?
+  scheduledAt    DateTime
+  recurrence     String?   // null | 'DAILY' | 'WEEKLY' | 'MONTHLY' | 'YEARLY'
+  recurrenceEnd  DateTime?
+  isCompleted    Boolean   @default(false)
+  notifiedAt     DateTime?
+  createdAt      DateTime  @default(now())
+
+  @@index([scheduledAt])
+  @@index([isCompleted])
+}

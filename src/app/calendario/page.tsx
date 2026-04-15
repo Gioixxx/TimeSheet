@@ -1,8 +1,9 @@
 import React from 'react'
 import { prisma } from '@/lib/prisma'
 import Link from 'next/link'
-import { ChevronLeft, ChevronRight } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Bell } from 'lucide-react'
 import Navbar from '@/components/Navbar'
+import { getOccurrencesInRange } from '@/lib/reminder-recurrence'
 import styles from './page.module.css'
 
 function getMonthBounds(year: number, month: number) {
@@ -134,10 +135,29 @@ export default async function CalendarioPage({
 
   const { start, end } = getMonthBounds(year, month)
 
-  const entries = await prisma.timeEntry.findMany({
-    where: { date: { gte: start, lt: end } },
-    select: { date: true, duration: true, activityType: true },
-  })
+  const [entries, reminders] = await Promise.all([
+    prisma.timeEntry.findMany({
+      where: { date: { gte: start, lt: end } },
+      select: { date: true, duration: true, activityType: true },
+    }),
+    prisma.reminder.findMany({
+      where: { isCompleted: false },
+      select: { title: true, scheduledAt: true, recurrence: true, recurrenceEnd: true, notifiedAt: true },
+    }),
+  ])
+
+  // Mappa giorno → reminder occorrenti in quel giorno
+  const reminderDayMap = new Map<string, string[]>()
+  const pad = (n: number) => String(n).padStart(2, '0')
+  for (const r of reminders) {
+    const occs = getOccurrencesInRange(r, start, end)
+    for (const occ of occs) {
+      const key = `${occ.getUTCFullYear()}-${pad(occ.getUTCMonth() + 1)}-${pad(occ.getUTCDate())}`
+      const list = reminderDayMap.get(key) ?? []
+      list.push(r.title)
+      reminderDayMap.set(key, list)
+    }
+  }
 
   const dayMap = new Map<string, number>()
   let totalMinutes = 0
@@ -264,6 +284,17 @@ export default async function CalendarioPage({
                     {cell.minutes > 0 && (
                       <span className={styles.cellHours}>{formatHours(cell.minutes)}</span>
                     )}
+                    {reminderDayMap.has(cell.key) && (
+                      <span
+                        className={styles.cellReminders}
+                        title={reminderDayMap.get(cell.key)!.join('\n')}
+                      >
+                        <Bell size={9} />
+                        {reminderDayMap.get(cell.key)!.length > 1
+                          ? reminderDayMap.get(cell.key)!.length
+                          : reminderDayMap.get(cell.key)![0].slice(0, 14)}
+                      </span>
+                    )}
                   </Link>
                 )
               )}
@@ -281,6 +312,7 @@ export default async function CalendarioPage({
           <span className={styles.legendItem}><span className={`${styles.legendDot} ${styles.colorFull}`} /> 8h+</span>
           <span className={styles.legendItem}><span className={`${styles.legendDot} ${styles.cellWeekend}`} /> weekend</span>
           <span className={styles.legendItem}><span className={`${styles.legendDot} ${styles.cellHoliday}`} /> festivo</span>
+          <span className={styles.legendItem}><Bell size={10} style={{ color: 'var(--primary)' }} /> reminder</span>
         </div>
       </div>
     </div>
