@@ -1,0 +1,2 @@
+-- AddValue to ActivityType enum: STRAORDINARIO
+-- SQLite stores enum values as TEXT; no ALTER TABLE required.

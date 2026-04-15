@@ -6,6 +6,7 @@ function activityTypeCsvLabel(t: ActivityType): string {
   if (t === 'MANUTENZIONE') return 'manutenzione'
   if (t === 'PERMESSO') return 'permesso'
   if (t === 'FERIE') return 'ferie'
+  if (t === 'STRAORDINARIO') return 'straordinario'
   return 'supporto'
 }
 
@@ -64,24 +65,39 @@ export async function GET(request: NextRequest) {
     orderBy: { date: 'asc' },
   })
 
+  // Calcola i totali giornalieri per determinare gli straordinari (> 480 min = 8h)
+  const dayTotals = new Map<string, number>()
+  for (const e of entries) {
+    const key = e.date.toISOString().slice(0, 10)
+    dayTotals.set(key, (dayTotals.get(key) ?? 0) + e.duration)
+  }
+  const dayOvertimeEmitted = new Set<string>()
+
   const header = [
     'data',
     'titolo',
     'descrizione',
     'tipo_attivita',
     'durata_ore',
+    'straordinari_ore',
     'cliente',
     'progetto',
     'tag',
   ]
   const rows = entries.map((e) => {
     const tagStr = e.tags.map((t) => t.name).join(';')
+    const dateKey = e.date.toISOString().slice(0, 10)
+    const isFirst = !dayOvertimeEmitted.has(dateKey)
+    if (isFirst) dayOvertimeEmitted.add(dateKey)
+    const dayOt = Math.max(0, (dayTotals.get(dateKey) ?? 0) - 480)
+    const overtimeVal = isFirst ? String(Math.round((dayOt / 60) * 100) / 100) : ''
     return [
       csvCell(formatDateUtc(e.date)),
       csvCell(e.title),
       csvCell(e.description ?? ''),
       csvCell(activityTypeCsvLabel(e.activityType)),
       String(Math.round((e.duration / 60) * 100) / 100),
+      csvCell(overtimeVal),
       csvCell(e.client?.name ?? ''),
       csvCell(e.project?.name ?? ''),
       csvCell(tagStr),

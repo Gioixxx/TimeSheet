@@ -1,19 +1,20 @@
 import { prisma } from '@/lib/prisma'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
-import { ChevronLeft, Plus, Sun, User, Briefcase, Wrench, HeadphonesIcon, Clock } from 'lucide-react'
+import { ChevronLeft, Plus, Sun, User, Briefcase, Wrench, HeadphonesIcon, Clock, TrendingUp } from 'lucide-react'
 import Navbar from '@/components/Navbar'
 import EditButton from '@/components/EditButton'
 import DeleteButton from '@/components/DeleteButton'
 import styles from './page.module.css'
 
-type ActivityType = 'SUPPORTO' | 'MANUTENZIONE' | 'PERMESSO' | 'FERIE'
+type ActivityType = 'SUPPORTO' | 'MANUTENZIONE' | 'PERMESSO' | 'FERIE' | 'STRAORDINARIO'
 
 type IconComponent = typeof Wrench
 function activityMeta(type: ActivityType): { label: string; Icon: IconComponent } {
   if (type === 'MANUTENZIONE') return { label: 'Manutenzione', Icon: Wrench }
   if (type === 'PERMESSO') return { label: 'Permesso', Icon: Clock }
   if (type === 'FERIE') return { label: 'Ferie', Icon: Sun }
+  if (type === 'STRAORDINARIO') return { label: 'Straordinario', Icon: TrendingUp }
   return { label: 'Supporto', Icon: HeadphonesIcon }
 }
 
@@ -58,6 +59,7 @@ export default async function CalendarioGiornoPage({
 
   const totalMinutes = entries.reduce((sum, e) => sum + e.duration, 0)
   const totalHours = (totalMinutes / 60).toFixed(1)
+  const overtimeMin = Math.max(0, totalMinutes - 480)
 
   const breakdown = new Map<ActivityType, number>()
   for (const e of entries) {
@@ -108,6 +110,14 @@ export default async function CalendarioGiornoPage({
             {breakdownItems.length > 0 ? breakdownItems.join(' · ') : '—'}
           </p>
         </div>
+        {overtimeMin > 0 && (
+          <div className={styles.statCard}>
+            <p className={styles.statLabel}>Straordinari</p>
+            <p className={styles.statValue}>
+              +{(overtimeMin / 60).toFixed(1)}<span className={styles.statUnit}>h</span>
+            </p>
+          </div>
+        )}
       </div>
 
       {entries.length === 0 ? (

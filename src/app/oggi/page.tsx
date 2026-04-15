@@ -1,6 +1,6 @@
 import { prisma } from '@/lib/prisma'
 import { Suspense } from 'react'
-import { Sun, User, Briefcase, Wrench, HeadphonesIcon, Clock } from 'lucide-react'
+import { Sun, User, Briefcase, Wrench, HeadphonesIcon, Clock, TrendingUp } from 'lucide-react'
 import TimeEntryForm from '@/components/TimeEntryForm'
 import TaskBoard from '@/components/TaskBoard'
 import ReminderList from '@/components/ReminderList'
@@ -9,13 +9,14 @@ import DeleteButton from '@/components/DeleteButton'
 import Navbar from '@/components/Navbar'
 import styles from './page.module.css'
 
-type ActivityType = 'SUPPORTO' | 'MANUTENZIONE' | 'PERMESSO' | 'FERIE'
+type ActivityType = 'SUPPORTO' | 'MANUTENZIONE' | 'PERMESSO' | 'FERIE' | 'STRAORDINARIO'
 
 type IconComponent = typeof Wrench
 function activityMeta(type: ActivityType): { label: string; Icon: IconComponent } {
   if (type === 'MANUTENZIONE') return { label: 'Manutenzione', Icon: Wrench }
   if (type === 'PERMESSO') return { label: 'Permesso', Icon: Clock }
   if (type === 'FERIE') return { label: 'Ferie', Icon: Sun }
+  if (type === 'STRAORDINARIO') return { label: 'Straordinario', Icon: TrendingUp }
   return { label: 'Supporto', Icon: HeadphonesIcon }
 }
 
@@ -71,9 +72,17 @@ export default async function OggiPage({
 
   const todayMin = todayAggr._sum.duration ?? 0
   const weekMin = weekAggr._sum.duration ?? 0
+  const overtimeMin = Math.max(0, todayMin - 480)
 
   const todayHours = (todayMin / 60).toFixed(1)
   const weekHours = (weekMin / 60).toFixed(1)
+
+  function formatOt(min: number): string {
+    const h = Math.floor(min / 60)
+    const m = min % 60
+    if (h === 0) return `+${m}m`
+    return m === 0 ? `+${h}h` : `+${h}h ${m}m`
+  }
 
   // Breakdown per tipo attività
   const breakdown = new Map<ActivityType, number>()
@@ -114,6 +123,12 @@ export default async function OggiPage({
             <span className={styles.statUnit}>h</span>
           </p>
         </div>
+        {overtimeMin > 0 && (
+          <div className={styles.statCard}>
+            <p className={styles.statLabel}>Straordinari</p>
+            <p className={styles.statValue}>{formatOt(overtimeMin)}</p>
+          </div>
+        )}
       </div>
 
       <div className={styles.content}>

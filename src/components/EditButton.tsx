@@ -13,7 +13,7 @@ type EntrySnapshot = {
   id: string
   title: string
   description: string | null
-  activityType: 'SUPPORTO' | 'MANUTENZIONE' | 'PERMESSO' | 'FERIE'
+  activityType: 'SUPPORTO' | 'MANUTENZIONE' | 'PERMESSO' | 'FERIE' | 'STRAORDINARIO'
   duration: number
   date: Date
   clientName: string | null
@@ -114,6 +114,10 @@ export default function EditButton({ entry }: { entry: EntrySnapshot }) {
                 <label className={styles.radioLabel}>
                   <input type="radio" value="FERIE" {...register('activityType')} />
                   Ferie
+                </label>
+                <label className={styles.radioLabel}>
+                  <input type="radio" value="STRAORDINARIO" {...register('activityType')} />
+                  Straord.
                 </label>
               </div>
             </div>

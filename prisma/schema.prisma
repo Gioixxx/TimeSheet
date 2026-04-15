@@ -12,6 +12,7 @@ enum ActivityType {
   MANUTENZIONE
   PERMESSO
   FERIE
+  STRAORDINARIO
 }
 
 model Client {

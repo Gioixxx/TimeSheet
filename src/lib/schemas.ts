@@ -1,6 +1,6 @@
 import { z } from 'zod'
 
-export const activityTypeSchema = z.enum(['SUPPORTO', 'MANUTENZIONE', 'PERMESSO', 'FERIE'])
+export const activityTypeSchema = z.enum(['SUPPORTO', 'MANUTENZIONE', 'PERMESSO', 'FERIE', 'STRAORDINARIO'])
 
 export const timeEntrySchema = z.object({
   title: z.string().min(1, 'Il titolo è obbligatorio'),

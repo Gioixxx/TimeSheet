@@ -172,6 +172,11 @@ export default async function CalendarioPage({
     if (next > busiestDay.minutes) busiestDay = { key, minutes: next }
   }
 
+  let totalOvertimeMinutes = 0
+  for (const dayMin of dayMap.values()) {
+    if (dayMin > 480) totalOvertimeMinutes += dayMin - 480
+  }
+
   const holidays = italianHolidays(year)
   const weeks = buildCalendarWeeks(year, month, dayMap, holidays)
   const activeDays = dayMap.size
@@ -249,6 +254,13 @@ export default async function CalendarioPage({
               : '—'}
           </p>
         </div>
+        <div className={styles.statCard}>
+          <p className={styles.statLabel}>Straordinari mese</p>
+          <p className={styles.statValue}>
+            {totalOvertimeMinutes > 0 ? `+${(totalOvertimeMinutes / 60).toFixed(1)}` : '0'}
+            <span className={styles.statUnit}>h</span>
+          </p>
+        </div>
       </div>
 
       <div className={styles.calendarWrap}>
@@ -283,6 +295,9 @@ export default async function CalendarioPage({
                     {cell.isHoliday && <span className={styles.cellFestivo}>festivo</span>}
                     {cell.minutes > 0 && (
                       <span className={styles.cellHours}>{formatHours(cell.minutes)}</span>
+                    )}
+                    {cell.minutes > 480 && (
+                      <span className={styles.cellOvertime}>+{formatHours(cell.minutes - 480)}</span>
                     )}
                     {reminderDayMap.has(cell.key) && (
                       <span

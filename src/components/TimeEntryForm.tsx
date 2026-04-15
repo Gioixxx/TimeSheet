@@ -322,6 +322,10 @@ export default function TimeEntryForm({ clients, projects, tags, defaultDate }: 
                 <input type="radio" value="FERIE" {...register('activityType')} />
                 Ferie
               </label>
+              <label className={styles.radioLabel}>
+                <input type="radio" value="STRAORDINARIO" {...register('activityType')} />
+                Straord.
+              </label>
             </div>
             {errors.activityType && (
               <p className={styles.error}>{errors.activityType.message}</p>
