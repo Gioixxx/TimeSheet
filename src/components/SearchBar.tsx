@@ -1,10 +1,10 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
-import { Search, X, User, Briefcase, Calendar, Wrench, HeadphonesIcon, Sun, Clock } from 'lucide-react'
+import { Search, X, User, Briefcase, Calendar, Wrench, HeadphonesIcon, Sun, Clock, TrendingUp } from 'lucide-react'
 import styles from './SearchBar.module.css'
 
-type ActivityType = 'SUPPORTO' | 'MANUTENZIONE' | 'PERMESSO' | 'FERIE'
+type ActivityType = 'SUPPORTO' | 'MANUTENZIONE' | 'PERMESSO' | 'FERIE' | 'STRAORDINARIO'
 
 type Entry = {
   id: string
@@ -22,6 +22,7 @@ function activityIcon(type: ActivityType) {
   if (type === 'MANUTENZIONE') return <Wrench size={11} />
   if (type === 'PERMESSO') return <Clock size={11} />
   if (type === 'FERIE') return <Sun size={11} />
+  if (type === 'STRAORDINARIO') return <TrendingUp size={11} />
   return <HeadphonesIcon size={11} />
 }
 
@@ -29,6 +30,7 @@ function activityLabel(type: ActivityType) {
   if (type === 'MANUTENZIONE') return 'Manutenzione'
   if (type === 'PERMESSO') return 'Permesso'
   if (type === 'FERIE') return 'Ferie'
+  if (type === 'STRAORDINARIO') return 'Straordinario'
   return 'Supporto'
 }
 

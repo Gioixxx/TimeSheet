@@ -1,6 +1,6 @@
 'use client';
 
-import { List, User, Briefcase, Calendar, Wrench, HeadphonesIcon, Sun, Clock } from 'lucide-react'
+import { List, User, Briefcase, Calendar, Wrench, HeadphonesIcon, Sun, Clock, TrendingUp } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import DeleteButton from './DeleteButton'
 import EditButton from './EditButton'
@@ -14,7 +14,7 @@ type Tag = { id: string; name: string }
 type Client = { id: string; name: string }
 type Project = { id: string; name: string }
 
-type ActivityType = 'SUPPORTO' | 'MANUTENZIONE' | 'PERMESSO' | 'FERIE'
+type ActivityType = 'SUPPORTO' | 'MANUTENZIONE' | 'PERMESSO' | 'FERIE' | 'STRAORDINARIO'
 
 type Entry = {
   id: string
@@ -33,6 +33,7 @@ function activityMeta(type: ActivityType): { label: string; Icon: IconComponent 
   if (type === 'MANUTENZIONE') return { label: 'Manutenzione', Icon: Wrench }
   if (type === 'PERMESSO') return { label: 'Permesso', Icon: Clock }
   if (type === 'FERIE') return { label: 'Ferie', Icon: Sun }
+  if (type === 'STRAORDINARIO') return { label: 'Straordinario', Icon: TrendingUp }
   return { label: 'Supporto', Icon: HeadphonesIcon }
 }
 
