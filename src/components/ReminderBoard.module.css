@@ -351,7 +351,7 @@
 }
 
 .addSelect {
-  background: rgba(255, 255, 255, 0.04);
+  background: var(--bg-card, #0f1120);
   border: 1px solid rgba(99, 102, 241, 0.2);
   border-radius: var(--radius-xs);
   color: var(--text);
@@ -363,10 +363,16 @@
   min-width: 120px;
   transition: border-color 0.15s;
   cursor: pointer;
+  color-scheme: dark;
 }
 
 .addSelect:focus {
   border-color: rgba(99, 102, 241, 0.5);
+}
+
+.addSelect option {
+  background: var(--bg-card, #0f1120);
+  color: var(--text, #e2e8f0);
 }
 
 /* ── Edit dialog ─────────────────────────────────────────────────────── */
@@ -469,7 +475,7 @@
 }
 
 .editSelect {
-  background: rgba(255, 255, 255, 0.04);
+  background: var(--bg-card, #0f1120);
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   color: var(--text);
@@ -480,11 +486,17 @@
   outline: none;
   cursor: pointer;
   transition: border-color 0.15s, box-shadow 0.15s;
+  color-scheme: dark;
 }
 
 .editSelect:focus {
   border-color: rgba(99, 102, 241, 0.5);
   box-shadow: 0 0 0 3px var(--primary-glow);
+}
+
+.editSelect option {
+  background: var(--bg-card, #0f1120);
+  color: var(--text, #e2e8f0);
 }
 
 .editActions {
