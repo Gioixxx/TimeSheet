@@ -5,26 +5,24 @@ import ReminderActions from './ReminderActions'
 import { recurrenceLabel } from '@/lib/reminder-recurrence'
 import styles from './ReminderBoard.module.css'
 
+const TZ = 'Europe/Rome'
+
 function formatDateTime(date: Date): string {
   const now = new Date()
-  const isToday =
-    date.getFullYear() === now.getFullYear() &&
-    date.getMonth() === now.getMonth() &&
-    date.getDate() === now.getDate()
-  const isTomorrow = (() => {
-    const tomorrow = new Date(now)
-    tomorrow.setDate(tomorrow.getDate() + 1)
-    return (
-      date.getFullYear() === tomorrow.getFullYear() &&
-      date.getMonth() === tomorrow.getMonth() &&
-      date.getDate() === tomorrow.getDate()
-    )
-  })()
+  const dateStr = date.toLocaleDateString('it-IT', { timeZone: TZ })
+  const nowStr = now.toLocaleDateString('it-IT', { timeZone: TZ })
+  const tomorrow = new Date(now)
+  tomorrow.setDate(tomorrow.getDate() + 1)
+  const tomorrowStr = tomorrow.toLocaleDateString('it-IT', { timeZone: TZ })
 
-  const time = date.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' })
+  const isToday = dateStr === nowStr
+  const isTomorrow = dateStr === tomorrowStr
+
+  const time = date.toLocaleTimeString('it-IT', { timeZone: TZ, hour: '2-digit', minute: '2-digit' })
   if (isToday) return `oggi ${time}`
   if (isTomorrow) return `domani ${time}`
   return date.toLocaleDateString('it-IT', {
+    timeZone: TZ,
     day: '2-digit',
     month: 'short',
     hour: '2-digit',
