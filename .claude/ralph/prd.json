@@ -1,0 +1,46 @@
+{
+  "_comment": "Stesso contenuto di prd.template.json (modello Ralph). Copia questa cartella ralph/ nel progetto e personalizza prd.json. Esempio narrativo multi-storia: examples/teams-transcriber.prd.json",
+
+  "project": "NomeProgetto",
+  "branchName": "ralph/nome-feature",
+  "description": "Descrizione breve della feature da implementare",
+
+  "stack": "dotnet",
+  "libs": [
+    "arch/clean-arch.md",
+    "stacks/dotnet.md",
+    "snippets/dotnet-patterns.md"
+  ],
+
+  "buildCommand": "dotnet build src/NomeProgetto/NomeProgetto.csproj",
+  "testCommand": "dotnet test",
+
+  "userStories": [
+    {
+      "id": "US-001",
+      "title": "Titolo storia 1",
+      "description": "Come [utente], voglio [feature] per [beneficio]",
+      "acceptanceCriteria": [
+        "Criterio verificabile 1",
+        "Criterio verificabile 2",
+        "Il build passa"
+      ],
+      "priority": 1,
+      "passes": false,
+      "notes": ""
+    },
+    {
+      "id": "US-002",
+      "title": "Titolo storia 2",
+      "description": "Come [utente], voglio [feature] per [beneficio]",
+      "acceptanceCriteria": [
+        "Criterio verificabile 1",
+        "Criterio verificabile 2",
+        "Il build passa"
+      ],
+      "priority": 2,
+      "passes": false,
+      "notes": ""
+    }
+  ]
+}
