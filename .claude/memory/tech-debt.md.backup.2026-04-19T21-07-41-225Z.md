@@ -37,13 +37,3 @@ Aggiornato da `/session-end`.
 ## Archiviato
 
 <!-- Item risolti — non eliminare, servono come storico -->
-
-### Esempio (da rimuovere quando si popola)
-**Priorità:** Bassa
-**Area:** Struttura Iniziale
-**Data:** 2026-04-19
-**Introdotto da:** Inizio progetto
-**Descrizione:** La struttura iniziale del progetto è generica e necessita di essere raffinata per allinearsi alle best practice di Next.js specifiche del dominio TimeSheet.
-**Perché rimandato:** Priorità all'implementazione delle funzionalità core.
-**Impatto attuale:** Nessun impatto immediato, ma potenziale per refactoring futuro.
-**Risoluzione suggerita:** Rivedere e standardizzare la struttura delle cartelle e dei componenti React dopo le prime user stories.

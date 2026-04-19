@@ -14,7 +14,7 @@
 
 > 2-3 righe su cos'è il progetto e qual è l'obiettivo attuale. Aggiorna questa sezione ogni sprint.
 
-TimeSheet è un'applicazione per la gestione delle schede attività, focalizzata sulla registrazione del tempo lavorato per specifici progetti e attività. L'obiettivo attuale è implementare le funzionalità di base per la registrazione del tempo in linea con le user stories del backlog (US-001, US-002).
+TimeSheet è un'applicazione per la gestione delle schede attività, focalizzata sulla registrazione del tempo lavorato per specifici progetti e attività.
 
 ## Indice memoria
 
@@ -30,4 +30,4 @@ TimeSheet è un'applicazione per la gestione delle schede attività, focalizzata
 
 > Cose da tenere sempre a mente durante il lavoro. Aggiorna con `/remember`.
 
-- Le user stories US-001 e US-002 sono le priorità immediate per l'implementazione della registrazione del tempo.
+- [aggiungi qui decisioni o vincoli critici]

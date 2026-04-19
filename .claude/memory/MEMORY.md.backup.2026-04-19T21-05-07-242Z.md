@@ -1,20 +1,20 @@
-# Memoria Progetto — TimeSheet
+# Memoria Progetto — [NOME PROGETTO]
 
 > Indice del contesto persistente. Aggiornato automaticamente da `/remember`.
 > Caricato da Claude ad ogni sessione via `@.claude/memory/MEMORY.md` nel CLAUDE.md del progetto.
 
 ## Panoramica
 
-**Stack:** nextjs
-**Repo:** F:/Root Progetti/PROJECTS/TimeSheet
+**Stack:** [es. .NET 8 + Angular 17 + PostgreSQL]
+**Repo:** [URL o path locale]
 **Team:** [chi lavora al progetto]
-**Ultimo aggiornamento:** 2026-04-19
+**Ultimo aggiornamento:** [data]
 
 ## Contesto rapido
 
 > 2-3 righe su cos'è il progetto e qual è l'obiettivo attuale. Aggiorna questa sezione ogni sprint.
 
-TimeSheet è un'applicazione per la gestione delle schede attività, focalizzata sulla registrazione del tempo lavorato per specifici progetti e attività. L'obiettivo attuale è implementare le funzionalità di base per la registrazione del tempo in linea con le user stories del backlog (US-001, US-002).
+[Descrizione breve del progetto e stato attuale]
 
 ## Indice memoria
 
@@ -30,4 +30,4 @@ TimeSheet è un'applicazione per la gestione delle schede attività, focalizzata
 
 > Cose da tenere sempre a mente durante il lavoro. Aggiorna con `/remember`.
 
-- Le user stories US-001 e US-002 sono le priorità immediate per l'implementazione della registrazione del tempo.
+- [aggiungi qui decisioni o vincoli critici]
