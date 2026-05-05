@@ -30,6 +30,10 @@ function formatDateUtc(d: Date): string {
   return `${day}/${month}/${year}`
 }
 
+function roundHours(hours: number): number {
+  return Math.round(hours * 100) / 100
+}
+
 export async function GET(request: NextRequest) {
   const yearStr = request.nextUrl.searchParams.get('year')
   const monthStr = request.nextUrl.searchParams.get('month')
@@ -65,13 +69,32 @@ export async function GET(request: NextRequest) {
     orderBy: { date: 'asc' },
   })
 
-  // Calcola i totali giornalieri per determinare gli straordinari (> 480 min = 8h)
+  const sortedEntries = [...entries].sort((a, b) => {
+    const clientCmp = (a.client?.name ?? '').localeCompare(b.client?.name ?? '', 'it')
+    if (clientCmp !== 0) return clientCmp
+    const projectCmp = (a.project?.name ?? '').localeCompare(b.project?.name ?? '', 'it')
+    if (projectCmp !== 0) return projectCmp
+    const dateCmp = a.date.getTime() - b.date.getTime()
+    if (dateCmp !== 0) return dateCmp
+    return a.title.localeCompare(b.title, 'it')
+  })
+
+  // Calcola i totali giornalieri per determinare gli straordinari (> 480 min = 8h).
   const dayTotals = new Map<string, number>()
   for (const e of entries) {
     const key = e.date.toISOString().slice(0, 10)
     dayTotals.set(key, (dayTotals.get(key) ?? 0) + e.duration)
   }
-  const dayOvertimeEmitted = new Set<string>()
+
+  // Mantiene la logica storica: lo straordinario giornaliero viene emesso una sola volta,
+  // sulla prima entry della giornata in ordine cronologico.
+  const firstEntryIdByDay = new Map<string, string>()
+  for (const e of entries) {
+    const dateKey = e.date.toISOString().slice(0, 10)
+    if (!firstEntryIdByDay.has(dateKey)) {
+      firstEntryIdByDay.set(dateKey, e.id)
+    }
+  }
 
   const header = [
     'data',
@@ -84,28 +107,60 @@ export async function GET(request: NextRequest) {
     'progetto',
     'tag',
   ]
-  const rows = entries.map((e) => {
+  const rows: string[] = []
+  const summaryMap = new Map<string, { client: string; project: string; totalHours: number; overtimeHours: number }>()
+
+  for (const e of sortedEntries) {
     const tagStr = e.tags.map((t) => t.name).join(';')
     const dateKey = e.date.toISOString().slice(0, 10)
-    const isFirst = !dayOvertimeEmitted.has(dateKey)
-    if (isFirst) dayOvertimeEmitted.add(dateKey)
+    const isFirst = firstEntryIdByDay.get(dateKey) === e.id
     const dayOt = Math.max(0, (dayTotals.get(dateKey) ?? 0) - 480)
-    const overtimeVal = isFirst ? String(Math.round((dayOt / 60) * 100) / 100) : ''
-    return [
+    const overtimeHours = isFirst ? roundHours(dayOt / 60) : 0
+    const overtimeVal = isFirst ? String(overtimeHours) : ''
+    rows.push([
       csvCell(formatDateUtc(e.date)),
       csvCell(e.title),
       csvCell(e.description ?? ''),
       csvCell(activityTypeCsvLabel(e.activityType)),
-      String(Math.round((e.duration / 60) * 100) / 100),
+      String(roundHours(e.duration / 60)),
       csvCell(overtimeVal),
       csvCell(e.client?.name ?? ''),
       csvCell(e.project?.name ?? ''),
       csvCell(tagStr),
-    ].join(',')
-  })
+    ].join(','))
+
+    const clientName = e.client?.name ?? ''
+    const projectName = e.project?.name ?? ''
+    const summaryKey = `${clientName}\u0000${projectName}`
+    const existing = summaryMap.get(summaryKey) ?? {
+      client: clientName,
+      project: projectName,
+      totalHours: 0,
+      overtimeHours: 0,
+    }
+    existing.totalHours += e.duration / 60
+    existing.overtimeHours += overtimeHours
+    summaryMap.set(summaryKey, existing)
+  }
+
+  const summaryHeader = ['cliente', 'progetto', 'totale_ore', 'straordinari_ore']
+  const summaryRows = [...summaryMap.values()]
+    .sort((a, b) => {
+      const clientCmp = a.client.localeCompare(b.client, 'it')
+      if (clientCmp !== 0) return clientCmp
+      return a.project.localeCompare(b.project, 'it')
+    })
+    .map((item) =>
+      [
+        csvCell(item.client),
+        csvCell(item.project),
+        String(roundHours(item.totalHours)),
+        String(roundHours(item.overtimeHours)),
+      ].join(','),
+    )
 
   const bom = '\uFEFF'
-  const body = bom + [header.join(','), ...rows].join('\n') + '\n'
+  const body = bom + [header.join(','), ...rows, '', summaryHeader.join(','), ...summaryRows].join('\n') + '\n'
 
   const filename = `timesheet-${year}-${String(month).padStart(2, '0')}.csv`
 
