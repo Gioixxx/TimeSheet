@@ -1,0 +1,106 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/Gioixxx/claude-libs/ralph/prd.schema.json",
+  "title": "Ralph PRD",
+  "description": "Contratto per prd.json usato da Ralph (sviluppo autonomo iterativo).",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "_comment": {
+      "type": "string",
+      "description": "Note opzionali non lette dagli script Ralph."
+    },
+    "project": {
+      "type": "string",
+      "minLength": 1
+    },
+    "branchName": {
+      "type": "string",
+      "minLength": 1
+    },
+    "description": {
+      "type": "string",
+      "minLength": 1
+    },
+    "stack": {
+      "type": "string",
+      "enum": [
+        "dotnet",
+        "spring",
+        "angular",
+        "electron",
+        "nextjs",
+        "fastapi",
+        "react-native",
+        "nestjs",
+        "wpf",
+        "go"
+      ],
+      "description": "Stack tecnico di riferimento (allineato a stacks/ in claude-libs)."
+    },
+    "libs": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "pattern": "^(arch|stacks|workflows|snippets)/[a-z0-9_-]+\\.md$"
+      },
+      "description": "Percorsi relativi a .claude/libs senza prefisso (es. stacks/dotnet.md)."
+    },
+    "buildCommand": {
+      "type": "string",
+      "minLength": 1
+    },
+    "testCommand": {
+      "type": "string",
+      "minLength": 1
+    },
+    "userStories": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/userStory" }
+    }
+  },
+  "required": [
+    "project",
+    "branchName",
+    "description",
+    "stack",
+    "libs",
+    "buildCommand",
+    "testCommand",
+    "userStories"
+  ],
+  "$defs": {
+    "userStory": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^US-[0-9]+$",
+          "description": "Identificativo storia (es. US-001)."
+        },
+        "title": { "type": "string", "minLength": 1 },
+        "description": { "type": "string", "minLength": 1 },
+        "acceptanceCriteria": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "priority": { "type": "integer", "minimum": 1 },
+        "passes": { "type": "boolean" },
+        "notes": { "type": "string" }
+      },
+      "required": [
+        "id",
+        "title",
+        "description",
+        "acceptanceCriteria",
+        "priority",
+        "passes",
+        "notes"
+      ]
+    }
+  }
+}

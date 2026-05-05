@@ -1,0 +1,65 @@
+{
+  "_comment": "Esempio Ralph — app desktop Electron (non uno stato di claude-libs). Usa come riferimento di struttura user story e libs; copia parti utili nel tuo prd.json",
+
+  "project": "Teams Transcriber Desktop",
+  "branchName": "ralph/teams-transcriber",
+  "description": "App Electron che registra audio di sistema durante call Teams, trascrive offline con whisper.cpp e opzionale analisi LLM. Audio locale, nessun cloud obbligatorio.",
+
+  "stack": "electron",
+  "libs": [
+    "stacks/electron.md",
+    "stacks/style-system.md",
+    "stacks/component-libs.md",
+    "arch/clean-arch.md"
+  ],
+
+  "buildCommand": "npm run build",
+  "testCommand": "npm run typecheck",
+
+  "userStories": [
+    {
+      "id": "US-001",
+      "title": "Scheletro Electron + Next.js + IPC + Prisma",
+      "description": "Come developer voglio main/preload/renderer collegati con IPC tipizzato e DB SQLite locale.",
+      "acceptanceCriteria": [
+        "Finestra Electron si apre senza errori",
+        "Renderer Next.js mostra pagina base con Tailwind",
+        "Ping IPC renderer→main→renderer tipizzato",
+        "Prisma migra e crea database in userData",
+        "TypeScript strict su main, preload e renderer",
+        "Il build passa"
+      ],
+      "priority": 1,
+      "passes": false,
+      "notes": "Struttura tipica: src/main, src/preload, src/renderer, src/shared/ipc-types.ts"
+    },
+    {
+      "id": "US-002",
+      "title": "Bridge IPC completo",
+      "description": "Come developer voglio namespaces IPC (audio, transcribe, ai, db) per integrazione sicura.",
+      "acceptanceCriteria": [
+        "contextBridge espone API namespaced coerenti",
+        "Tipi canali in modulo condiviso",
+        "Renderer non importa mai il package electron direttamente",
+        "Il build passa"
+      ],
+      "priority": 1,
+      "passes": false,
+      "notes": ""
+    },
+    {
+      "id": "US-003",
+      "title": "Registrazione WASAPI loopback",
+      "description": "Come utente voglio registrare l'audio di sistema per call Teams.",
+      "acceptanceCriteria": [
+        "Lista dispositivi disponibile dal main via IPC",
+        "ffmpeg loopback salvato come WAV adatto a Whisper",
+        "Stop registrazione consolidato correttamente",
+        "Il build passa"
+      ],
+      "priority": 2,
+      "passes": false,
+      "notes": "Path ffmpeg risolto per dev vs packaged"
+    }
+  ]
+}
