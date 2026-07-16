@@ -19,14 +19,14 @@
 
 - **Dashboard con statistiche** — ore totali, ore settimana corrente, voci registrate, clienti attivi
 - **Registrazione rapida** — form con cliente, progetto, tag, tipo attività e durata
-- **Input in linguaggio naturale (AI)** — scrivi `"2 ore di supporto al cliente Rossi ieri"` e Gemini compila il form automaticamente
+- **Input in linguaggio naturale (AI)** — scrivi `"2 ore di supporto al cliente Rossi ieri"` e l'AI compila il form automaticamente
 - **Task board** — kanban leggero per gestire attività in corso
 - **Vista calendario** — riepilogo mensile delle ore per giorno
 - **Ricerca globale** — barra di ricerca con dropdown live su tutte le voci
 - **Filtri** — per mese, tipo attività, cliente
 - **Export CSV** — esporta il timesheet di qualsiasi mese con un click
 - **Automazione via email** — polling IMAP per convertire email in voci di timesheet
-- **100% locale** — database SQLite sul tuo disco, nessun dato inviato a server esterni (eccetto le chiamate AI opzionali)
+- **100% locale** — database SQLite sul tuo disco; anche l'AI opzionale gira su un gateway self-hosted nella tua rete locale, nessun dato inviato a servizi cloud di terze parti
 - **Portable .exe** — distribuibile come singolo file Windows, senza installer
 
 ## Tipi di attività
@@ -45,7 +45,7 @@
 | UI | Next.js 16 + React 19 |
 | Desktop | Electron 36 |
 | Database | Prisma 6 + SQLite |
-| AI | Google Gemini (`gemini-2.5-flash`) |
+| AI | iAPi — gateway self-hosted su Ollama (`llama3.2:3b`) |
 | Form | React Hook Form + Zod |
 | Icone | Lucide React |
 | Packaging | electron-builder (portable x64) |
@@ -70,12 +70,12 @@ Crea un file `.env.local` nella root del progetto:
 # Percorso del database SQLite locale
 DATABASE_URL="file:./prisma/dev.db"
 
-# (Opzionale) Chiave API Gemini per l'input in linguaggio naturale
-# Ottieni la tua su https://aistudio.google.com/apikey
-GEMINI_API_KEY=your_api_key_here
+# (Opzionale) URL del gateway AI locale (iAPi) per l'input in linguaggio naturale
+# Es. http://<ip-pi-lan>:8000 se in esecuzione su un Raspberry Pi nella tua LAN
+IAPI_BASE_URL=http://<ip-pi-lan>:8000
 
-# (Opzionale) Modello Gemini da usare — default: gemini-2.5-flash
-# GEMINI_MODEL=gemini-2.5-flash
+# (Opzionale) Chiave API per il gateway iAPi (riservata per autenticazione futura)
+# IAPI_API_KEY=
 ```
 
 ## Build — .exe portabile per Windows
@@ -103,7 +103,7 @@ timesheet/
 │   │   └── page.tsx        # Dashboard principale
 │   ├── components/         # Componenti React
 │   └── lib/
-│       ├── parse-nl-time-entry.ts  # Parser linguaggio naturale (Gemini)
+│       ├── parse-nl-time-entry.ts  # Parser linguaggio naturale (iAPi)
 │       ├── prisma.ts               # Client Prisma singleton
 │       └── schemas.ts              # Schemi Zod
 └── scripts/                # Script build/packaging
@@ -111,11 +111,11 @@ timesheet/
 
 ## Come funziona l'input AI
 
-Se configuri `GEMINI_API_KEY`, puoi descrivere l'attività in italiano o inglese e l'AI compila automaticamente tutti i campi del form:
+Se configuri `IAPI_BASE_URL`, puoi descrivere l'attività in italiano o inglese e l'AI compila automaticamente tutti i campi del form:
 
 > *"Ho passato 3 ore a risolvere un bug critico sul progetto CRM per il cliente Rossi"*
 
-Vengono estratti automaticamente: titolo, durata, tipo attività (`MANUTENZIONE`), cliente e progetto. La funzione è completamente **opzionale** — l'app funziona senza chiave API.
+Vengono estratti automaticamente: titolo, durata, tipo attività (`MANUTENZIONE`), cliente e progetto. L'elaborazione avviene su un modello locale di piccole dimensioni (self-hosted, non cloud): può essere leggermente meno preciso di un modello cloud di grandi dimensioni, ma i dati non lasciano mai la rete locale. La funzione è completamente **opzionale** — l'app funziona senza un gateway AI configurato.
 
 ## Contribuire
 
@@ -146,14 +146,14 @@ Vedi [CONTRIBUTING.md](CONTRIBUTING.md).
 
 - **Dashboard with stats** — total hours, current week hours, entry count, active clients
 - **Quick entry form** — client, project, tags, activity type, and duration
-- **Natural language input (AI)** — type `"2 hours of support for client Rossi yesterday"` and Gemini fills in the form automatically
+- **Natural language input (AI)** — type `"2 hours of support for client Rossi yesterday"` and the AI fills in the form automatically
 - **Task board** — lightweight kanban for managing ongoing work
 - **Calendar view** — monthly overview of hours per day
 - **Global search** — live dropdown search across all entries
 - **Filters** — by month, activity type, client
 - **CSV export** — export any month's timesheet with one click
 - **Email automation** — IMAP polling to convert emails into timesheet entries
-- **100% local** — SQLite database on your disk, no data sent to external servers (except optional AI calls)
+- **100% local** — SQLite database on your disk; even the optional AI runs on a self-hosted gateway on your local network, no data sent to third-party cloud services
 - **Portable .exe** — single Windows executable, no installer required
 
 ## Activity Types
@@ -172,7 +172,7 @@ Vedi [CONTRIBUTING.md](CONTRIBUTING.md).
 | UI | Next.js 16 + React 19 |
 | Desktop | Electron 36 |
 | Database | Prisma 6 + SQLite |
-| AI | Google Gemini (`gemini-2.5-flash`) |
+| AI | iAPi — self-hosted gateway over Ollama (`llama3.2:3b`) |
 | Forms | React Hook Form + Zod |
 | Icons | Lucide React |
 | Packaging | electron-builder (portable x64) |
@@ -197,12 +197,12 @@ Create a `.env.local` file in the project root:
 # Local SQLite database path
 DATABASE_URL="file:./prisma/dev.db"
 
-# (Optional) Gemini API key for natural language input
-# Get yours at https://aistudio.google.com/apikey
-GEMINI_API_KEY=your_api_key_here
+# (Optional) Local AI gateway (iAPi) URL for natural language input
+# E.g. http://<pi-lan-ip>:8000 if running on a Raspberry Pi on your LAN
+IAPI_BASE_URL=http://<pi-lan-ip>:8000
 
-# (Optional) Gemini model to use — default: gemini-2.5-flash
-# GEMINI_MODEL=gemini-2.5-flash
+# (Optional) API key for the iAPi gateway (reserved for future auth)
+# IAPI_API_KEY=
 ```
 
 ## Build — Portable Windows .exe
@@ -215,11 +215,11 @@ The executable is generated in `dist/`. No installation required — copy and ru
 
 ## How AI Input Works
 
-With `GEMINI_API_KEY` configured, describe your activity in plain text and the AI auto-fills all form fields:
+With `IAPI_BASE_URL` configured, describe your activity in plain text and the AI auto-fills all form fields:
 
 > *"Spent 3 hours fixing a critical bug on the CRM project for client Rossi"*
 
-Automatically extracted: title, duration, activity type (`MANUTENZIONE`), client, and project. Completely **optional** — the app works without an API key.
+Automatically extracted: title, duration, activity type (`MANUTENZIONE`), client, and project. Inference runs on a small self-hosted local model (not cloud): it may be slightly less accurate than a large cloud model, but your data never leaves your local network. Completely **optional** — the app works without an AI gateway configured.
 
 ## Contributing
 

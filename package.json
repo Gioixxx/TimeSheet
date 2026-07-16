@@ -16,7 +16,6 @@
     "dist:win": "next build && npm run prepare:standalone && electron-builder --win portable --x64"
   },
   "dependencies": {
-    "@google/generative-ai": "^0.24.1",
     "@hookform/resolvers": "^3.9.0",
     "@prisma/client": "^6.7.0",
     "framer-motion": "^12.38.0",

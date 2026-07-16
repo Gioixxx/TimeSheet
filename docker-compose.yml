@@ -10,8 +10,8 @@ services:
       DATABASE_URL: file:///data/timesheet.db
       AUTH_ENABLED: "true"
       AUTH_SECRET: ${AUTH_SECRET:-}
-      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
-      GEMINI_MODEL: ${GEMINI_MODEL:-gemini-2.5-flash}
+      IAPI_BASE_URL: ${IAPI_BASE_URL:-}
+      IAPI_API_KEY: ${IAPI_API_KEY:-}
       EMAIL_ENABLED: ${EMAIL_ENABLED:-false}
       EMAIL_IMAP_HOST: ${EMAIL_IMAP_HOST:-}
       EMAIL_IMAP_PORT: ${EMAIL_IMAP_PORT:-993}

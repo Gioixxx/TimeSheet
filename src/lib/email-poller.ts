@@ -1,5 +1,6 @@
 import { ImapFlow } from 'imapflow'
 import { prisma } from '@/lib/prisma'
+import { parseEmailToTask } from '@/lib/parse-email-task'
 
 export type PollResult = {
   created: number
@@ -82,6 +83,17 @@ export async function pollEmails(): Promise<PollResult> {
         toProcess.push({ seq: msg.seq, messageId, from, subject })
       }
 
+      // Anagrafica cliente/progetto per l'arricchimento AI — una sola query per l'intero poll,
+      // evitata del tutto quando non ci sono nuove email da processare.
+      const [clients, projects] = toProcess.length > 0
+        ? await Promise.all([
+            prisma.client.findMany({ select: { name: true }, orderBy: { name: 'asc' } }),
+            prisma.project.findMany({ select: { name: true }, orderBy: { name: 'asc' } }),
+          ])
+        : [[], []]
+      const clientNames = clients.map((c) => c.name)
+      const projectNames = projects.map((p) => p.name)
+
       // Now fetch full body for each message to process
       for (const { seq, messageId, from, subject } of toProcess) {
         try {
@@ -108,11 +120,19 @@ export async function pollEmails(): Promise<PollResult> {
           // Truncate to 4000 chars
           if (emailText.length > 4000) emailText = emailText.slice(0, 4000)
 
+          // Arricchimento opzionale via AI locale (iAPi): estrae cliente/progetto/stima dal
+          // testo. Best-effort — se non riesce (non configurato, irraggiungibile, risposta non
+          // valida) il task viene comunque creato con i soli title/notes, come prima.
+          const enrichment = await parseEmailToTask(subject, emailText, { clientNames, projectNames })
+
           // Create task directly from email subject + body
           const task = await prisma.task.create({
             data: {
               title: subject || emailText.slice(0, 100),
               notes: emailText,
+              clientName: enrichment.ok ? enrichment.data.clientName : undefined,
+              projectName: enrichment.ok ? enrichment.data.projectName : undefined,
+              estimatedMinutes: enrichment.ok ? enrichment.data.estimatedMinutes : undefined,
             },
           })
 
@@ -145,7 +165,7 @@ export async function pollEmails(): Promise<PollResult> {
 /**
  * Extracts readable plain text from a raw email source (RFC 2822 format).
  * Handles multipart and quoted-printable encoding.
- * Includes forwarded/quoted content to give Gemini full context.
+ * Includes forwarded/quoted content so the extracted text has full context.
  */
 function extractTextFromRawEmail(source: string): string {
   // Decode quoted-printable
