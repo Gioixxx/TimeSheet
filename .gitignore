@@ -38,6 +38,9 @@ yarn-error.log*
 # auth session secret (auto-generato in locale se AUTH_SECRET non è impostato)
 .auth-secret
 
+# backup automatico generato dagli hook di sessione su sprint.md
+.claude/memory/*.bak
+
 # vercel
 .vercel
 
