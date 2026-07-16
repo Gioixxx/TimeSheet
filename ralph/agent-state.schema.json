@@ -1,0 +1,96 @@
+﻿{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/Gioixxx/claude-libs/ralph/agent-state.schema.json",
+  "title": "Ralph Agent State",
+  "description": "Stato runtime di una sessione ralph-parallel: traccia agenti, storie e progress.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "session": {
+      "type": "string",
+      "description": "Identificativo univoco della sessione (es. ISO 8601 timestamp di avvio).",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}"
+    },
+    "startedAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp ISO 8601 di avvio sessione."
+    },
+    "updatedAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp ISO 8601 dell'ultimo aggiornamento di stato."
+    },
+    "prdPath": {
+      "type": "string",
+      "description": "Percorso relativo al prd.json usato dalla sessione."
+    },
+    "agents": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/agentEntry" },
+      "description": "Lista degli agenti attivi o completati in questa sessione."
+    }
+  },
+  "required": ["session", "startedAt", "updatedAt", "prdPath", "agents"],
+  "$defs": {
+    "agentEntry": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "storyId": {
+          "type": "string",
+          "pattern": "^US-[0-9]+$",
+          "description": "ID della storia assegnata all'agente."
+        },
+        "worktree": {
+          "type": "string",
+          "description": "Path del worktree Git isolato usato dall'agente."
+        },
+        "branch": {
+          "type": "string",
+          "description": "Branch Git su cui l'agente sta lavorando."
+        },
+        "status": {
+          "type": "string",
+          "enum": ["WAITING", "RUNNING", "COMPLETE", "ERROR"],
+          "description": "Stato corrente dell'agente."
+        },
+        "startedAt": {
+          "type": ["string", "null"],
+          "format": "date-time",
+          "description": "Timestamp ISO 8601 di avvio agente. Null se ancora in attesa."
+        },
+        "completedAt": {
+          "type": ["string", "null"],
+          "format": "date-time",
+          "description": "Timestamp ISO 8601 di completamento. Null se non ancora terminato."
+        },
+        "exitCode": {
+          "type": ["integer", "null"],
+          "description": "Exit code del processo agente. Null se ancora in esecuzione."
+        },
+        "mergeStrategy": {
+          "type": "string",
+          "enum": ["squash", "merge", "rebase"],
+          "default": "squash",
+          "description": "Strategia di merge usata al completamento."
+        },
+        "error": {
+          "type": ["string", "null"],
+          "description": "Messaggio di errore se status=ERROR, altrimenti null."
+        }
+      },
+      "required": [
+        "storyId",
+        "worktree",
+        "branch",
+        "status",
+        "startedAt",
+        "completedAt",
+        "exitCode",
+        "mergeStrategy",
+        "error"
+      ]
+    }
+  }
+}

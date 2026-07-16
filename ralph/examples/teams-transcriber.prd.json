@@ -1,4 +1,4 @@
-{
+﻿{
   "_comment": "Esempio Ralph — app desktop Electron (non uno stato di claude-libs). Usa come riferimento di struttura user story e libs; copia parti utili nel tuo prd.json",
 
   "project": "Teams Transcriber Desktop",

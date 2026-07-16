@@ -1,7 +1,7 @@
-#!/usr/bin/env bash
+﻿#!/usr/bin/env bash
 # ralph/ralph.sh — Loop autonomo di sviluppo (bash)
 # Uso: bash ralph/ralph.sh <iterations> [project_dir]
-# Esegue ralph-once.sh per N iterazioni o fino al completamento del PRD.
+# Env: RALPH_RUNNER=claude|cursor (default: claude; propagato a ralph-once.sh)
 
 set -e
 
@@ -13,11 +13,22 @@ fi
 ITERATIONS="$1"
 RALPH_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_DIR="${2:-$(dirname "$RALPH_DIR")}"
+RUNNER="${RALPH_RUNNER:-claude}"
+
+# Su Windows preferire ralph.ps1 se PowerShell disponibile
+PS_LOOP="$RALPH_DIR/ralph.ps1"
+if [ -f "$PS_LOOP" ] && command -v powershell.exe >/dev/null 2>&1; then
+  exec powershell.exe -NoProfile -ExecutionPolicy Bypass -File "$PS_LOOP" \
+    -Iterations "$ITERATIONS" -ProjectDir "$PROJECT_DIR" -Runner "$RUNNER"
+fi
 
 echo "Ralph — Loop Autonomo"
 echo "Progetto:   $PROJECT_DIR"
 echo "Iterazioni: $ITERATIONS"
+echo "Runner:     $RUNNER"
 echo "=========================================="
+
+export RALPH_RUNNER="$RUNNER"
 
 for ((i=1; i<=ITERATIONS; i++)); do
   # Controlla stop.signal all'inizio di ogni iterazione — consumato e rimosso

@@ -44,3 +44,12 @@ next-env.d.ts
 
 # Ralph — stato live (non committare)
 ralph/run-state.json
+
+# claude-libs: junction verso il clone canonico (~/.claude/claude-libs), non versionare
+.claude/libs/
+
+.claude/memory-sync.log
+
+.ralph-worktrees/
+
+.claude/libs-ext/

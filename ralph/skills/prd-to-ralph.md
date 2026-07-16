@@ -1,4 +1,4 @@
----
+﻿---
 name: ralph
 description: "Converti PRD in formato prd.json per il sistema Ralph. Usa quando hai un PRD esistente e vuoi avviare uno sviluppo autonomo. Trigger: converti questo prd, trasforma in ralph, crea prd.json, ralph json."
 ---
@@ -37,6 +37,9 @@ Converte un PRD (markdown o testo) nel file `ralph/prd.json` per l'esecuzione au
   "buildCommand": "dotnet build src/NomeProgetto/NomeProgetto.csproj",
   "testCommand": "dotnet test",
 
+  "reviewGate": false,
+  "pullRequest": false,
+
   "userStories": [
     {
       "id": "US-001",
@@ -55,6 +58,15 @@ Converte un PRD (markdown o testo) nel file `ralph/prd.json` per l'esecuzione au
 ```
 
 ---
+
+## Campi opzionali
+
+- `reviewGate` (bool, default `false`): se `true`, ogni storia è completata solo dopo un
+  `/code-review` (+ `/security-review`) senza rilievi bloccanti. Vedi `ralph/skills/review-gate.md`.
+  Proponilo per feature sensibili (auth, pagamenti, dati personali).
+- `pullRequest` (bool, default `false`): dopo il commit di ogni storia, push del branch +
+  apertura/mantenimento di una PR draft (gh, best-effort). Vedi `ralph/skills/pull-request.md`.
+- `contextSync` (bool, default `true`): sync memoria/doc dopo ogni storia (best-effort via Ollama).
 
 ## Campi obbligatori da raccogliere
 

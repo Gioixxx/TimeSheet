@@ -1,5 +1,5 @@
-{
-  "_comment": "Stesso contenuto di prd.template.json (modello Ralph). Copia questa cartella ralph/ nel progetto e personalizza prd.json. Esempio narrativo multi-storia: examples/teams-transcriber.prd.json",
+﻿{
+  "_comment": "Schema minimo Ralph — copia questo file come ralph/prd.json nel progetto target e compila i campi. Esempio esteso: examples/teams-transcriber.prd.json",
 
   "project": "NomeProgetto",
   "branchName": "ralph/nome-feature",

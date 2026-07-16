@@ -1,0 +1,22 @@
+{
+    "name":  "TimeSheet",
+    "kit":  "custom",
+    "stack":  "nextjs",
+    "claudeLibsVersion":  "1.27.0",
+    "buildCommand":  "npm run build",
+    "testCommand":  "npm test",
+    "githubRepo":  "Gioixxx/TimeSheet",
+    "createdAt":  "2026-07-16",
+    "features":  {
+                     "memoryOllama":  true,
+                     "libraryRouter":  true,
+                     "enforcementHooks":  true
+                 },
+    "modules":  [
+                    "stacks/nextjs.md",
+                    "snippets/nextjs-patterns.md",
+                    "stacks/style-system.md",
+                    "workflows/iterative-dev.md",
+                    "workflows/testing.md"
+                ]
+}
