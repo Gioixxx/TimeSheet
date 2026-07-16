@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { ChevronLeft, ChevronRight, Bell } from 'lucide-react'
 import Navbar from '@/components/Navbar'
 import { getOccurrencesInRange } from '@/lib/reminder-recurrence'
+import { isAuthEnabled } from '@/lib/session'
 import styles from './page.module.css'
 
 function getMonthBounds(year: number, month: number) {
@@ -213,7 +214,7 @@ export default async function CalendarioPage({
 
   return (
     <div className={styles.page}>
-      <Navbar centerSlot={monthNav} />
+      <Navbar centerSlot={monthNav} showLogout={isAuthEnabled()} />
 
       <div className={styles.stats}>
         <div className={styles.statCard}>

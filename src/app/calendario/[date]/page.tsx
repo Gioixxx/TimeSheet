@@ -5,6 +5,7 @@ import { ChevronLeft, Plus, Sun, User, Briefcase, Wrench, HeadphonesIcon, Clock,
 import Navbar from '@/components/Navbar'
 import EditButton from '@/components/EditButton'
 import DeleteButton from '@/components/DeleteButton'
+import { isAuthEnabled } from '@/lib/session'
 import styles from './page.module.css'
 
 type ActivityType = 'SUPPORTO' | 'MANUTENZIONE' | 'PERMESSO' | 'FERIE' | 'STRAORDINARIO'
@@ -79,7 +80,7 @@ export default async function CalendarioGiornoPage({
 
   return (
     <div className={styles.page}>
-      <Navbar />
+      <Navbar showLogout={isAuthEnabled()} />
 
       <div className={styles.header}>
         <Link href={`/calendario?month=${monthParam}`} className={styles.backLink}>

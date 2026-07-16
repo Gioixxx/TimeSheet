@@ -7,6 +7,7 @@ import ReminderList from '@/components/ReminderList'
 import EditButton from '@/components/EditButton'
 import DeleteButton from '@/components/DeleteButton'
 import Navbar from '@/components/Navbar'
+import { isAuthEnabled } from '@/lib/session'
 import styles from './page.module.css'
 
 type ActivityType = 'SUPPORTO' | 'MANUTENZIONE' | 'PERMESSO' | 'FERIE' | 'STRAORDINARIO'
@@ -96,7 +97,7 @@ export default async function OggiPage({
 
   return (
     <div className={styles.page}>
-      <Navbar />
+      <Navbar showLogout={isAuthEnabled()} />
 
       <div className={styles.stats}>
         <div className={styles.statCard}>

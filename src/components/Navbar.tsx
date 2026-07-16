@@ -2,9 +2,10 @@
 import React from 'react'
 import { usePathname } from 'next/navigation'
 import Link from 'next/link'
-import { List, CalendarDays, Sun } from 'lucide-react'
+import { List, CalendarDays, Sun, LogOut } from 'lucide-react'
 import SearchBar from './SearchBar'
 import { ThemeSelector } from './ThemeSelector'
+import { logout } from '@/lib/auth-actions'
 import styles from './Navbar.module.css'
 
 const MONTH_NAMES = [
@@ -13,7 +14,13 @@ const MONTH_NAMES = [
 ]
 const DAY_NAMES = ['Domenica', 'Lunedì', 'Martedì', 'Mercoledì', 'Giovedì', 'Venerdì', 'Sabato']
 
-export default function Navbar({ centerSlot }: { centerSlot?: React.ReactNode }) {
+export default function Navbar({
+  centerSlot,
+  showLogout = false,
+}: {
+  centerSlot?: React.ReactNode
+  showLogout?: boolean
+}) {
   const pathname = usePathname()
   const now = new Date()
   const dateLabel = `${DAY_NAMES[now.getDay()]} ${now.getDate()} ${MONTH_NAMES[now.getMonth()]} ${now.getFullYear()}`
@@ -44,6 +51,13 @@ export default function Navbar({ centerSlot }: { centerSlot?: React.ReactNode })
           <Link href="/oggi" className={styles.navLink}><Sun size={14} />Oggi</Link>
         )}
         <ThemeSelector />
+        {showLogout && (
+          <form action={logout}>
+            <button type="submit" className={styles.navLink} title="Esci" aria-label="Esci">
+              <LogOut size={14} />
+            </button>
+          </form>
+        )}
       </nav>
     </header>
   )

@@ -21,6 +21,8 @@ Stato del lavoro in corso. Aggiornato con `/sprint`.
 - [x] US-001: Implementare la funzionalità "Titolo storia 1"
 - [x] US-002: Implementare la funzionalità "Titolo storia 2"
 - [x] Applicazione stabile e funzionante
+- [x] Definire l'elenco delle migliorie da apportare
+- [x] Pianificare le verifiche successive (test, controlli qualità)
 
 ### Bloccati / In attesa
 

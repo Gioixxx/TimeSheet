@@ -22,6 +22,7 @@
     "framer-motion": "^12.38.0",
     "html-to-text": "^9.0.5",
     "imapflow": "^1.2.18",
+    "jose": "^6.2.3",
     "lucide-react": "^0.469.0",
     "next": "16.2.2",
     "react": "19.2.4",

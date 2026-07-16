@@ -1,10 +1,14 @@
 import { prisma } from '@/lib/prisma'
 import { nextOccurrence } from '@/lib/reminder-recurrence'
+import { requireApiAuth } from '@/lib/dal'
 
 export async function POST(
   _req: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const unauthorized = await requireApiAuth()
+  if (unauthorized) return unauthorized
+
   const { id } = await params
 
   try {

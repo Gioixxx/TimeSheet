@@ -1,7 +1,11 @@
 import { prisma } from '@/lib/prisma'
 import { nextOccurrence } from '@/lib/reminder-recurrence'
+import { requireApiAuth } from '@/lib/dal'
 
 export async function GET() {
+  const unauthorized = await requireApiAuth()
+  if (unauthorized) return unauthorized
+
   const now = new Date()
 
   // Prendi tutti i reminder attivi (non completati)

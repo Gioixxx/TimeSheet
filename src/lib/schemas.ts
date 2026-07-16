@@ -18,3 +18,23 @@ export const timeEntrySchema = z.object({
 })
 
 export type TimeEntryInput = z.infer<typeof timeEntrySchema>
+
+export const loginSchema = z.object({
+  username: z.string().min(1, "L'username è obbligatorio"),
+  password: z.string().min(1, 'La password è obbligatoria'),
+})
+
+export const setupSchema = z
+  .object({
+    username: z.string().min(3, "Minimo 3 caratteri").trim(),
+    password: z
+      .string()
+      .min(8, 'Minimo 8 caratteri')
+      .regex(/[a-zA-Z]/, 'Deve contenere almeno una lettera')
+      .regex(/[0-9]/, 'Deve contenere almeno un numero'),
+    confirmPassword: z.string(),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: 'Le password non coincidono',
+    path: ['confirmPassword'],
+  })

@@ -8,7 +8,7 @@
 **Stack:** nextjs
 **Repo:** F:/Root Progetti/PROJECTS/TimeSheet
 **Team:** [chi lavora al progetto]
-**Ultimo aggiornamento:** 2026-04-19
+**Ultimo aggiornamento:** 2026-07-16
 
 ## Contesto rapido
 
@@ -31,3 +31,4 @@ TimeSheet è un'applicazione per la gestione delle schede attività, focalizzata
 > Cose da tenere sempre a mente durante il lavoro. Aggiorna con `/remember`.
 
 - Le user stories US-001 e US-002 sono le priorità immediate per l'implementazione della registrazione del tempo.
+- L'app gira sia come Electron desktop locale (mai esposto) sia come Docker su CasaOS/Pi dell'utente (esposto su internet). Il login (vedi [[decisions]]) è gated dal flag `AUTH_ENABLED`: assente/false per Electron e dev locale, `"true"` solo in `docker-compose.yml`. Non dare per scontato che l'auth sia sempre attiva quando si modifica codice in quest'area.

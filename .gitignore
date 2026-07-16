@@ -35,6 +35,9 @@ yarn-error.log*
 .env*
 !.env.example
 
+# auth session secret (auto-generato in locale se AUTH_SECRET non è impostato)
+.auth-secret
+
 # vercel
 .vercel
 

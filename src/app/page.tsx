@@ -6,6 +6,7 @@ import FilterBar from '@/components/FilterBar'
 import TaskBoard from '@/components/TaskBoard'
 import ReminderList from '@/components/ReminderList'
 import Navbar from '@/components/Navbar'
+import { isAuthEnabled } from '@/lib/session'
 import styles from './page.module.css'
 
 const ITEMS_PER_PAGE = 5
@@ -110,7 +111,7 @@ export default async function Home({
 
   return (
     <div className={styles.page}>
-      <Navbar />
+      <Navbar showLogout={isAuthEnabled()} />
 
       <div className={styles.stats}>
         <div className={styles.statCard}>

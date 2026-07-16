@@ -1,6 +1,7 @@
 import { NextRequest } from 'next/server'
 import type { ActivityType } from '@prisma/client'
 import { prisma } from '@/lib/prisma'
+import { requireApiAuth } from '@/lib/dal'
 
 function activityTypeCsvLabel(t: ActivityType): string {
   if (t === 'MANUTENZIONE') return 'manutenzione'
@@ -35,6 +36,9 @@ function roundHours(hours: number): number {
 }
 
 export async function GET(request: NextRequest) {
+  const unauthorized = await requireApiAuth()
+  if (unauthorized) return unauthorized
+
   const yearStr = request.nextUrl.searchParams.get('year')
   const monthStr = request.nextUrl.searchParams.get('month')
 

@@ -56,6 +56,10 @@
   font-weight: 500;
   padding: 4px 10px;
   border-radius: 99px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-family: inherit;
   transition: color 0.15s, background 0.15s;
 }
 
