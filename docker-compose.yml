@@ -9,6 +9,9 @@ services:
     environment:
       DATABASE_URL: file:///data/timesheet.db
       AUTH_ENABLED: "true"
+      # Istanza esposta via DuckDNS senza reverse proxy TLS davanti: un cookie Secure
+      # su HTTP semplice verrebbe scartato dal browser e la sessione non persisterebbe.
+      COOKIE_SECURE: "false"
       AUTH_SECRET: ${AUTH_SECRET:-}
       IAPI_BASE_URL: ${IAPI_BASE_URL:-}
       IAPI_API_KEY: ${IAPI_API_KEY:-}

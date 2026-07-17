@@ -13,6 +13,17 @@ export function isAuthEnabled(): boolean {
   return process.env.AUTH_ENABLED === 'true'
 }
 
+// Il browser scarta silenziosamente i cookie Secure ricevuti su connessione HTTP
+// non cifrata: se l'istanza è esposta senza TLS davanti (es. DuckDNS senza reverse
+// proxy), il flag va disattivato esplicitamente con COOKIE_SECURE=false, altrimenti
+// la sessione non viene mai salvata e ogni navigazione fresca torna al login.
+function isCookieSecure(): boolean {
+  if (process.env.COOKIE_SECURE !== undefined) {
+    return process.env.COOKIE_SECURE === 'true'
+  }
+  return process.env.NODE_ENV === 'production'
+}
+
 let cachedSecret: string | null = null
 
 function getAuthSecret(): string {
@@ -66,7 +77,7 @@ export async function createSession(userId: string): Promise<void> {
   const cookieStore = await cookies()
   cookieStore.set(SESSION_COOKIE, token, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
+    secure: isCookieSecure(),
     sameSite: 'lax',
     maxAge: MAX_AGE_SECONDS,
     path: '/',
