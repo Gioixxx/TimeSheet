@@ -34,6 +34,7 @@ Stato del lavoro in corso. Aggiornato con `/sprint`.
 - [x] Aggiornata la schema Prisma con binary targets per la generazione del client
 - [x] Rende configurabile il flag Secure del cookie di sessione
 - [x] Impedisce al service worker di cachare pagine di login
+- [x] Aggiornata la memoria del progetto (fix login Calendario/Oggi)
 
 ### Bloccati / In attesa
 

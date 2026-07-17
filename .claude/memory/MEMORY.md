@@ -8,7 +8,7 @@
 **Stack:** nextjs
 **Repo:** F:/Root Progetti/PROJECTS/TimeSheet
 **Team:** [chi lavora al progetto]
-**Ultimo aggiornamento:** 2026-07-16
+**Ultimo aggiornamento:** 2026-07-17
 
 ## Contesto rapido
 

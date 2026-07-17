@@ -23,6 +23,16 @@ Alimentato durante le sessioni e le retrospettive. Prioritizzato prima di ogni n
 
 <!-- Item che andrebbero nello sprint successivo -->
 
+### Reverse proxy TLS davanti all'istanza CasaOS
+**Priorità:** Alta
+**Tipo:** Tech debt / Sicurezza
+**Area:** Deploy / CasaOS (`docker-compose.yml`, infrastruttura Pi)
+**Data aggiunta:** 2026-07-17
+**Descrizione:** L'istanza è esposta su internet via DuckDNS su HTTP semplice (`http://myservergio.duckdns.org:3000`), senza TLS. Per sbloccare il bug del cookie `Secure` scartato dal browser (vedi [[decisions]]) è stato scelto un fix rapido: `COOKIE_SECURE=false`. Conseguenza: username, password e token di sessione viaggiano in chiaro su internet — chiunque sulla stessa rete (wifi condiviso, ISP compromesso, ecc.) può intercettarli. Aggiungere un reverse proxy con TLS (es. Caddy con Let's Encrypt, si integra bene con DuckDNS) davanti alla porta 3000 risolverebbe sia il problema di sicurezza sia permetterebbe di rimettere `COOKIE_SECURE=true`.
+**Criteri di accettazione:** L'app è raggiungibile solo via HTTPS (redirect automatico da HTTP), certificato valido e rinnovato automaticamente, `COOKIE_SECURE` torna a `true`/rimosso.
+**Dipendenze:** Forward della porta 443 sul router di casa (oltre alla 3000/80 attuale); nuovo servizio Docker sul Pi.
+**Stima:** Media
+
 ## Media priorità
 
 <!-- Item importanti ma non urgenti -->
