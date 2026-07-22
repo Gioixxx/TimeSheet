@@ -19,6 +19,7 @@ Stato del lavoro in corso. Aggiornato con `/sprint`.
 
 ### Completati
 
+- [x] Migliorato l'export: aggiunto formato Excel (.xlsx) formattato accanto al CSV, filtri UI rispettati, riga totale generale (v1.2.0)
 - [x] Login per l'istanza web esposta su CasaOS (v1.1.0) — vedi [[decisions]]
 - [x] Verificato in produzione: setup account, login, redirect corretti
 - [x] Diagnosticato e risolto: email mai recuperata su Docker/CasaOS (nessun trigger per `/api/email-poll` nel container) — aggiunto `src/instrumentation.ts`, deployato, verificato funzionante
@@ -35,6 +36,7 @@ Stato del lavoro in corso. Aggiornato con `/sprint`.
 - [x] Rende configurabile il flag Secure del cookie di sessione
 - [x] Impedisce al service worker di cachare pagine di login
 - [x] Aggiornata la memoria del progetto (fix login Calendario/Oggi)
+- [x] Aggiunta la funzionalità di login per l'istanza esposta su internet
 
 ### Bloccati / In attesa
 

@@ -52,6 +52,7 @@ export default function FilterBar({ clients }: Props) {
         <option value="MANUTENZIONE">Manutenzione</option>
         <option value="PERMESSO">Permesso</option>
         <option value="FERIE">Ferie</option>
+        <option value="STRAORDINARIO">Straordinario</option>
       </select>
 
       <select
