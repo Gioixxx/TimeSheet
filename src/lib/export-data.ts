@@ -16,6 +16,7 @@ export type ExportRow = {
 export type ExportSummaryRow = {
   client: string
   project: string
+  activityType: string // label italiana lowercase
   totalHours: number
   overtimeHours: number
 }
@@ -115,12 +116,13 @@ export async function buildExportDataset(filters: ExportFilters): Promise<Export
     const isFirst = firstEntryIdByDay.get(dateKey) === e.id
     const dayOt = Math.max(0, (dayTotals.get(dateKey) ?? 0) - 480)
     const overtimeHours = isFirst ? roundHours(dayOt / 60) : 0
+    const activityType = activityTypeLabel(e.activityType)
 
     rows.push({
       date: formatDateUtc(e.date),
       title: e.title,
       description: e.description ?? '',
-      activityType: activityTypeLabel(e.activityType),
+      activityType,
       hours: roundHours(e.duration / 60),
       overtimeHours: isFirst ? overtimeHours : null,
       client: e.client?.name ?? '',
@@ -130,10 +132,11 @@ export async function buildExportDataset(filters: ExportFilters): Promise<Export
 
     const clientName = e.client?.name ?? ''
     const projectName = e.project?.name ?? ''
-    const summaryKey = JSON.stringify([clientName, projectName])
+    const summaryKey = JSON.stringify([clientName, projectName, activityType])
     const existing = summaryMap.get(summaryKey) ?? {
       client: clientName,
       project: projectName,
+      activityType,
       totalHours: 0,
       overtimeHours: 0,
     }
@@ -149,13 +152,16 @@ export async function buildExportDataset(filters: ExportFilters): Promise<Export
     .map((item) => ({
       client: item.client,
       project: item.project,
+      activityType: item.activityType,
       totalHours: roundHours(item.totalHours),
       overtimeHours: roundHours(item.overtimeHours),
     }))
     .sort((a, b) => {
       const clientCmp = a.client.localeCompare(b.client, 'it')
       if (clientCmp !== 0) return clientCmp
-      return a.project.localeCompare(b.project, 'it')
+      const projectCmp = a.project.localeCompare(b.project, 'it')
+      if (projectCmp !== 0) return projectCmp
+      return a.activityType.localeCompare(b.activityType, 'it')
     })
 
   return {
