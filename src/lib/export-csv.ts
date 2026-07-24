@@ -36,13 +36,20 @@ export function datasetToCsv(dataset: ExportDataset): string {
     ].join(','),
   )
 
-  const summaryHeader = ['cliente', 'progetto', 'totale_ore', 'straordinari_ore']
+  const summaryHeader = ['cliente', 'progetto', 'tipo_attivita', 'totale_ore', 'straordinari_ore']
   const summaryRows = dataset.summary.map((s) =>
-    [csvCell(s.client), csvCell(s.project), String(s.totalHours), String(s.overtimeHours)].join(','),
+    [
+      csvCell(s.client),
+      csvCell(s.project),
+      csvCell(s.activityType),
+      String(s.totalHours),
+      String(s.overtimeHours),
+    ].join(','),
   )
 
   const totalRow = [
     csvCell('TOTALE'),
+    '',
     '',
     String(dataset.grandTotal.totalHours),
     String(dataset.grandTotal.overtimeHours),
