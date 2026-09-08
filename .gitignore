@@ -56,6 +56,10 @@ ralph/run-state.json
 
 .claude/memory-sync.log
 
+# impostazioni Claude Code locali alla macchina (permessi + hook con path assoluti):
+# non versionare, altrimenti rompono le sessioni su altri OS/CI
+.claude/settings.local.json
+
 .ralph-worktrees/
 
 .claude/libs-ext/
