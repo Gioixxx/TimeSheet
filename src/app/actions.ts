@@ -153,24 +153,19 @@ export async function updateTask(id: string, raw: unknown) {
   revalidatePath('/')
 }
 
-export async function logTaskAsEntry(
-  taskId: string,
-  duration: number,
-  date: string,
-  activityType: 'SUPPORTO' | 'MANUTENZIONE',
-  description?: string
-) {
+/**
+ * Trasforma un'attività in una voce di timesheet.
+ *
+ * Riceve gli stessi campi del form manuale (`timeEntrySchema`) invece di un sottoinsieme: il
+ * task serve solo a precompilare il dialog, quindi tipo, durata, cliente, progetto e tag sono
+ * quelli confermati dall'utente al momento della registrazione. Prima erano vincolati a
+ * SUPPORTO/MANUTENZIONE e i tag non erano proprio rappresentabili.
+ */
+export async function logTaskAsEntry(taskId: string, raw: unknown) {
   await verifySession()
-  const task = await prisma.task.findUniqueOrThrow({ where: { id: taskId } })
-  const entryData = timeEntrySchema.parse({
-    title: task.title,
-    description: description ?? task.notes ?? undefined,
-    activityType,
-    duration,
-    date,
-    clientName: task.clientName ?? undefined,
-    projectName: task.projectName ?? undefined,
-  })
+  const entryData = timeEntrySchema.parse(raw)
+  // Verifica che il task esista prima della transazione, per un errore comprensibile
+  await prisma.task.findUniqueOrThrow({ where: { id: taskId } })
   const { clientId, projectId, tagRecords } = await resolveRelations(entryData)
   await prisma.$transaction([
     prisma.timeEntry.create({
@@ -188,6 +183,8 @@ export async function logTaskAsEntry(
     prisma.task.delete({ where: { id: taskId } }),
   ])
   revalidatePath('/')
+  revalidatePath('/oggi')
+  revalidatePath('/calendario', 'layout')
 }
 
 // ── Reminder actions ─────────────────────────────────────────────────────────

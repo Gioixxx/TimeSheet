@@ -135,7 +135,7 @@ export default async function OggiPage({
         <div className={styles.listColumn}>
           <ReminderList />
           <Suspense>
-            <TaskBoard />
+            <TaskBoard clients={clients} projects={projects} tags={tags} />
           </Suspense>
 
           <div className={styles.todayList}>

@@ -526,3 +526,125 @@
   opacity: 0.5;
   cursor: not-allowed;
 }
+
+/* ── Campi allineati al form di inserimento manuale ─────────────────────────── */
+
+.logError {
+  font-size: 0.72rem;
+  color: var(--danger);
+  background: rgba(239, 68, 68, 0.08);
+  border: 1px solid rgba(239, 68, 68, 0.25);
+  border-radius: var(--radius-sm);
+  padding: 6px 8px;
+  margin: 0;
+}
+
+.logLabelHint {
+  font-weight: 400;
+  text-transform: none;
+  letter-spacing: 0;
+  color: var(--text-placeholder);
+}
+
+.logFold {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: rgba(0, 0, 0, 0.15);
+  overflow: hidden;
+}
+
+.logFoldSummary {
+  list-style: none;
+  cursor: pointer;
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 7px 9px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  user-select: none;
+  transition: background 0.15s, color 0.15s;
+}
+
+.logFoldSummary::-webkit-details-marker {
+  display: none;
+}
+
+.logFoldSummary::before {
+  content: '';
+  width: 0;
+  height: 0;
+  border-left: 5px solid var(--text-muted);
+  border-top: 4px solid transparent;
+  border-bottom: 4px solid transparent;
+  transition: transform 0.15s;
+  flex-shrink: 0;
+  opacity: 0.7;
+}
+
+.logFold[open] > .logFoldSummary::before {
+  transform: rotate(90deg);
+}
+
+.logFoldSummary:hover {
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.logFoldBody {
+  padding: 0 9px 9px;
+  border-top: 1px solid var(--border);
+}
+
+.chipBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.chipBlock + .chipBlock {
+  margin-top: 8px;
+}
+
+.chipLegend {
+  font-size: 0.65rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin: 8px 0 0;
+}
+
+.chipRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.chip {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--border);
+  border-radius: 99px;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.68rem;
+  font-weight: 500;
+  padding: 3px 8px;
+  transition: border-color 0.15s, background 0.15s, color 0.15s, transform 0.15s;
+}
+
+.chip:hover {
+  border-color: rgba(99, 102, 241, 0.35);
+  background: var(--primary-glow);
+  color: var(--primary-hover);
+  transform: scale(1.04);
+}
+
+.chip:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}

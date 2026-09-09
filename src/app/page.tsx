@@ -146,7 +146,7 @@ export default async function Home({
         </div>
         <div className={styles.listColumn}>
           <ReminderList />
-          <TaskBoard />
+          <TaskBoard clients={clients} projects={projects} tags={tags} />
           <Suspense>
             <FilterBar clients={clients} />
           </Suspense>

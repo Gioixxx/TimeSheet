@@ -1,10 +1,18 @@
 'use client'
 
-import { useRef, useTransition, useState } from 'react'
+import { useRef, useTransition, useState, useMemo } from 'react'
 import { X, Play, User, Briefcase, Clock, Pencil } from 'lucide-react'
 import { todayLocalIso } from '@/lib/dates'
+import {
+  ACTIVITY_TYPES,
+  ACTIVITY_TYPE_LABELS,
+  MINUTES_PER_WORKDAY,
+  type ActivityType,
+} from '@/lib/activity-types'
 import { deleteTask, logTaskAsEntry, updateTask } from '@/app/actions'
 import styles from './TaskBoard.module.css'
+
+const QUICK_PICK_LIMIT = 8
 
 type Task = {
   id: string
@@ -15,7 +23,14 @@ type Task = {
   estimatedMinutes: number | null
 }
 
-export default function TaskCard({ task }: { task: Task }) {
+type Props = {
+  task: Task
+  clients: { id: string; name: string }[]
+  projects: { id: string; name: string; clientId: string | null }[]
+  tags: { id: string; name: string }[]
+}
+
+export default function TaskCard({ task, clients, projects, tags }: Props) {
   const dialogRef = useRef<HTMLDialogElement>(null)
   const editDialogRef = useRef<HTMLDialogElement>(null)
   const [isPending, startTransition] = useTransition()
@@ -27,21 +42,87 @@ export default function TaskCard({ task }: { task: Task }) {
 
   const [logOre, setLogOre] = useState(initOre)
   const [logMin, setLogMin] = useState(initMin)
+  const [logGiorni, setLogGiorni] = useState(1)
   const [stimaOre, setStimaOre] = useState(initOre)
   const [stimaMin, setStimaMin] = useState(initMin)
 
+  // Campi della voce, precompilati dal task ma modificabili prima di registrare
+  const [logType, setLogType] = useState<ActivityType>('SUPPORTO')
+  const [logTitle, setLogTitle] = useState(task.title)
+  const [logClient, setLogClient] = useState(task.clientName ?? '')
+  const [logProject, setLogProject] = useState(task.projectName ?? '')
+  const [logTags, setLogTags] = useState('')
+  const [logError, setLogError] = useState<string | null>(null)
+
   const today = todayLocalIso()
+
+  const isFerie = logType === 'FERIE'
+
+  const selectedClient = useMemo(() => {
+    const n = logClient.trim().toLowerCase()
+    if (!n) return undefined
+    return clients.find((c) => c.name.toLowerCase() === n)
+  }, [clients, logClient])
+
+  // Come nel form manuale: i progetti si restringono al cliente scelto, se ne ha
+  const projectOptions = useMemo(() => {
+    if (!selectedClient) return projects
+    const filtered = projects.filter((p) => p.clientId === selectedClient.id)
+    return filtered.length > 0 ? filtered : projects
+  }, [projects, selectedClient])
+
+  const topClients = useMemo(() => clients.slice(0, QUICK_PICK_LIMIT), [clients])
+  const topProjects = useMemo(() => projectOptions.slice(0, QUICK_PICK_LIMIT), [projectOptions])
+  const topTags = useMemo(() => tags.slice(0, QUICK_PICK_LIMIT), [tags])
+
+  const appendTag = (name: string) => {
+    const existing = logTags
+      .split(',')
+      .map((t) => t.trim().toLowerCase())
+      .filter(Boolean)
+    if (existing.includes(name.toLowerCase())) return
+    setLogTags(logTags.trim() ? `${logTags.trim()}, ${name}` : name)
+  }
+
+  const openLogDialog = () => {
+    // Risincronizza i campi col task a ogni apertura
+    setLogTitle(task.title)
+    setLogClient(task.clientName ?? '')
+    setLogProject(task.projectName ?? '')
+    setLogTags('')
+    setLogType('SUPPORTO')
+    setLogOre(initOre)
+    setLogMin(initMin)
+    setLogGiorni(1)
+    setLogError(null)
+    dialogRef.current?.showModal()
+  }
 
   const handleLog = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     const fd = new FormData(e.currentTarget)
-    const duration = Math.max(1, logOre * 60 + logMin)
-    const date = fd.get('date') as string
-    const activityType = fd.get('activityType') as 'SUPPORTO' | 'MANUTENZIONE'
-    const description = (fd.get('description') as string) || undefined
+    // FERIE si misura in giornate lavorative, come nel form manuale
+    const duration = isFerie
+      ? Math.max(1, Math.round(logGiorni * MINUTES_PER_WORKDAY))
+      : Math.max(1, logOre * 60 + logMin)
+
+    setLogError(null)
     startTransition(async () => {
-      await logTaskAsEntry(task.id, duration, date, activityType, description)
-      dialogRef.current?.close()
+      try {
+        await logTaskAsEntry(task.id, {
+          title: logTitle.trim(),
+          description: (fd.get('description') as string)?.trim() || undefined,
+          activityType: logType,
+          duration,
+          date: fd.get('date') as string,
+          clientName: logClient.trim() || undefined,
+          projectName: logProject.trim() || undefined,
+          tags: logTags.trim() || undefined,
+        })
+        dialogRef.current?.close()
+      } catch {
+        setLogError('Controlla i campi: titolo e durata sono obbligatori.')
+      }
     })
   }
 
@@ -116,7 +197,7 @@ export default function TaskCard({ task }: { task: Task }) {
 
         <button
           className={styles.logBtn}
-          onClick={() => dialogRef.current?.showModal()}
+          onClick={openLogDialog}
           title="Registra tempo per questa attività"
         >
           <Play size={11} />
@@ -142,32 +223,70 @@ export default function TaskCard({ task }: { task: Task }) {
         </div>
 
         <form onSubmit={handleLog} className={styles.logForm}>
-          {(task.clientName || task.projectName) && (
-            <div className={styles.logHint}>
-              {task.clientName && <span><User size={11} /> {task.clientName}</span>}
-              {task.projectName && <span><Briefcase size={11} /> {task.projectName}</span>}
+          {logError && <p className={styles.logError}>{logError}</p>}
+
+          <div className={styles.logField}>
+            <label className={styles.logLabel} htmlFor={`log-title-${task.id}`}>Titolo *</label>
+            <input
+              id={`log-title-${task.id}`}
+              type="text"
+              value={logTitle}
+              onChange={(e) => setLogTitle(e.target.value)}
+              required
+              maxLength={200}
+              className={styles.logInput}
+            />
+          </div>
+
+          <div className={styles.logField}>
+            <span className={styles.logLabel}>Tipo *</span>
+            <div className={styles.logRadioRow}>
+              {ACTIVITY_TYPES.map((type) => (
+                <label key={type} className={styles.logRadio}>
+                  <input
+                    type="radio"
+                    name="activityType"
+                    value={type}
+                    checked={logType === type}
+                    onChange={() => setLogType(type)}
+                  />
+                  {ACTIVITY_TYPE_LABELS[type]}
+                </label>
+              ))}
             </div>
-          )}
+          </div>
 
           <div className={styles.logRow}>
             <div className={styles.logField}>
               <label className={styles.logLabel}>Durata *</label>
-              <div className={styles.logDurationPair}>
-                <input
-                  type="number" min={0} max={23}
-                  value={logOre}
-                  onChange={(e) => setLogOre(parseInt(e.target.value) || 0)}
-                  className={`${styles.logInput} ${styles.logDurationUnitInput}`}
-                />
-                <span className={styles.logDurationUnitLabel}>h</span>
-                <input
-                  type="number" min={0} max={59}
-                  value={logMin}
-                  onChange={(e) => setLogMin(parseInt(e.target.value) || 0)}
-                  className={`${styles.logInput} ${styles.logDurationUnitInput}`}
-                />
-                <span className={styles.logDurationUnitLabel}>min</span>
-              </div>
+              {isFerie ? (
+                <div className={styles.logDurationPair}>
+                  <input
+                    type="number" min={0.5} max={30} step={0.5}
+                    value={logGiorni}
+                    onChange={(e) => setLogGiorni(parseFloat(e.target.value) || 1)}
+                    className={`${styles.logInput} ${styles.logDurationUnitInput}`}
+                  />
+                  <span className={styles.logDurationUnitLabel}>giorni</span>
+                </div>
+              ) : (
+                <div className={styles.logDurationPair}>
+                  <input
+                    type="number" min={0} max={23}
+                    value={logOre}
+                    onChange={(e) => setLogOre(parseInt(e.target.value) || 0)}
+                    className={`${styles.logInput} ${styles.logDurationUnitInput}`}
+                  />
+                  <span className={styles.logDurationUnitLabel}>h</span>
+                  <input
+                    type="number" min={0} max={59}
+                    value={logMin}
+                    onChange={(e) => setLogMin(parseInt(e.target.value) || 0)}
+                    className={`${styles.logInput} ${styles.logDurationUnitInput}`}
+                  />
+                  <span className={styles.logDurationUnitLabel}>min</span>
+                </div>
+              )}
             </div>
             <div className={styles.logField}>
               <label className={styles.logLabel}>Data *</label>
@@ -191,19 +310,126 @@ export default function TaskCard({ task }: { task: Task }) {
             />
           </div>
 
-          <div className={styles.logField}>
-            <span className={styles.logLabel}>Tipo *</span>
-            <div className={styles.logRadioRow}>
-              <label className={styles.logRadio}>
-                <input type="radio" name="activityType" value="SUPPORTO" defaultChecked />
-                Supporto
-              </label>
-              <label className={styles.logRadio}>
-                <input type="radio" name="activityType" value="MANUTENZIONE" />
-                Manutenzione
-              </label>
+          <div className={styles.logRow}>
+            <div className={styles.logField}>
+              <label className={styles.logLabel} htmlFor={`log-client-${task.id}`}>Cliente</label>
+              <input
+                id={`log-client-${task.id}`}
+                type="text"
+                value={logClient}
+                onChange={(e) => setLogClient(e.target.value)}
+                list={`log-clients-${task.id}`}
+                className={styles.logInput}
+                placeholder="Nessun cliente"
+              />
+              <datalist id={`log-clients-${task.id}`}>
+                {clients.map((c) => (
+                  <option key={c.id} value={c.name} />
+                ))}
+              </datalist>
+            </div>
+            <div className={styles.logField}>
+              <label className={styles.logLabel} htmlFor={`log-project-${task.id}`}>Progetto</label>
+              <input
+                id={`log-project-${task.id}`}
+                type="text"
+                value={logProject}
+                onChange={(e) => setLogProject(e.target.value)}
+                list={`log-projects-${task.id}`}
+                className={styles.logInput}
+                placeholder="Nessun progetto"
+              />
+              <datalist id={`log-projects-${task.id}`}>
+                {projectOptions.map((p) => (
+                  <option key={p.id} value={p.name} />
+                ))}
+              </datalist>
             </div>
           </div>
+
+          <div className={styles.logField}>
+            <label className={styles.logLabel} htmlFor={`log-tags-${task.id}`}>
+              Tag <span className={styles.logLabelHint}>separati da virgola</span>
+            </label>
+            <input
+              id={`log-tags-${task.id}`}
+              type="text"
+              value={logTags}
+              onChange={(e) => setLogTags(e.target.value)}
+              list={`log-taglist-${task.id}`}
+              className={styles.logInput}
+              placeholder="es. urgente, backup"
+            />
+            <datalist id={`log-taglist-${task.id}`}>
+              {tags.map((t) => (
+                <option key={t.id} value={t.name} />
+              ))}
+            </datalist>
+          </div>
+
+          {(topClients.length > 0 || topProjects.length > 0 || topTags.length > 0) && (
+            <details className={styles.logFold}>
+              <summary className={styles.logFoldSummary}>Suggerimenti rapidi</summary>
+              <div className={styles.logFoldBody}>
+                {topClients.length > 0 && (
+                  <div className={styles.chipBlock}>
+                    <p className={styles.chipLegend}>Clienti</p>
+                    <div className={styles.chipRow} role="group" aria-label="Suggerimenti cliente">
+                      {topClients.map((c) => (
+                        <button
+                          key={c.id}
+                          type="button"
+                          className={styles.chip}
+                          onClick={() => setLogClient(c.name)}
+                          aria-label={`Imposta cliente ${c.name}`}
+                        >
+                          {c.name}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                {topProjects.length > 0 && (
+                  <div className={styles.chipBlock}>
+                    <p className={styles.chipLegend}>
+                      Progetti{selectedClient ? ` · ${selectedClient.name}` : ''}
+                    </p>
+                    <div className={styles.chipRow} role="group" aria-label="Suggerimenti progetto">
+                      {topProjects.map((p) => (
+                        <button
+                          key={p.id}
+                          type="button"
+                          className={styles.chip}
+                          onClick={() => setLogProject(p.name)}
+                          aria-label={`Imposta progetto ${p.name}`}
+                        >
+                          {p.name}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                {topTags.length > 0 && (
+                  <div className={styles.chipBlock}>
+                    <p className={styles.chipLegend}>Tag</p>
+                    <div className={styles.chipRow} role="group" aria-label="Suggerimenti tag">
+                      {topTags.map((t) => (
+                        <button
+                          key={t.id}
+                          type="button"
+                          className={styles.chip}
+                          onClick={() => appendTag(t.name)}
+                          aria-label={`Aggiungi tag ${t.name}`}
+                        >
+                          #{t.name}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </details>
+          )}
 
           <div className={styles.logActions}>
             <button
