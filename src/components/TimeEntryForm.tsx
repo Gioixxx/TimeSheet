@@ -5,6 +5,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { useTransition, useRef, useState, useMemo, useCallback, useEffect } from 'react'
 import { Plus, Mic, MicOff, Clock, Sparkles } from 'lucide-react'
 import { timeEntrySchema, type TimeEntryInput } from '@/lib/schemas'
+import { todayLocalIso } from '@/lib/dates'
 import { createTimeEntry, parseNaturalLanguageTimeEntry } from '@/app/actions'
 import styles from './TimeEntryForm.module.css'
 
@@ -68,7 +69,7 @@ export default function TimeEntryForm({ clients, projects, tags, defaultDate }: 
   const [minuti, setMinuti] = useState(0)
   const [giorni, setGiorni] = useState(1)
 
-  const today = new Date().toISOString().split('T')[0]
+  const today = todayLocalIso()
 
   const {
     register,
@@ -139,7 +140,7 @@ export default function TimeEntryForm({ clients, projects, tags, defaultDate }: 
   const onSubmit = (data: TimeEntryInput) => {
     startTransition(async () => {
       await createTimeEntry(data)
-      const currentDate = new Date().toISOString().split('T')[0]
+      const currentDate = todayLocalIso()
       reset({ title: '', description: '', activityType: 'SUPPORTO', duration: 60, date: currentDate, clientName: '', projectName: '', tags: '' })
       setOre(1); setMinuti(0); setGiorni(1)
     })

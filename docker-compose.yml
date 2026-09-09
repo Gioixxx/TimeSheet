@@ -8,6 +8,10 @@ services:
       - "3000:3000"
     environment:
       DATABASE_URL: file:///data/timesheet.db
+      # Il giorno corrente e le finestre settimanali sono calcolati nel fuso del processo:
+      # deve coincidere con quello dell'utente, altrimenti dopo mezzanotte il server e il
+      # browser sono su due giorni diversi.
+      TZ: ${TZ:-Europe/Rome}
       AUTH_ENABLED: "true"
       # Istanza esposta via DuckDNS senza reverse proxy TLS davanti: un cookie Secure
       # su HTTP semplice verrebbe scartato dal browser e la sessione non persisterebbe.

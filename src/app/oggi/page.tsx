@@ -8,6 +8,7 @@ import EditButton from '@/components/EditButton'
 import DeleteButton from '@/components/DeleteButton'
 import Navbar from '@/components/Navbar'
 import { isAuthEnabled } from '@/lib/session'
+import { isoWeekRangeUtc, localDayRangeUtc } from '@/lib/dates'
 import styles from './page.module.css'
 
 type ActivityType = 'SUPPORTO' | 'MANUTENZIONE' | 'PERMESSO' | 'FERIE' | 'STRAORDINARIO'
@@ -43,14 +44,9 @@ export default async function OggiPage({
   const rawDate = typeof params.date === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(params.date)
     ? params.date
     : null
-  const now = new Date()
-  // Usa local midnight per evitare disallineamenti timezone (app locale)
-  const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate())
-  const endOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1)
-
-  // Lunedì della settimana corrente (local)
-  const startOfWeek = new Date(startOfToday)
-  startOfWeek.setDate(startOfToday.getDate() - ((startOfToday.getDay() + 6) % 7))
+  // Giorno letto nel fuso locale ma ancorato a mezzanotte UTC, come lo storage delle voci
+  const { start: startOfToday, end: endOfToday } = localDayRangeUtc()
+  const week = isoWeekRangeUtc()
 
   const [entries, todayAggr, weekAggr, clients, projects, tags] = await Promise.all([
     prisma.timeEntry.findMany({
@@ -63,7 +59,7 @@ export default async function OggiPage({
       _sum: { duration: true },
     }),
     prisma.timeEntry.aggregate({
-      where: { date: { gte: startOfWeek } },
+      where: { date: { gte: week.start, lt: week.end } },
       _sum: { duration: true },
     }),
     prisma.client.findMany({ take: SUGGESTIONS_LIMIT, orderBy: { entries: { _count: 'desc' } } }),

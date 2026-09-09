@@ -7,30 +7,32 @@ import TaskBoard from '@/components/TaskBoard'
 import ReminderList from '@/components/ReminderList'
 import Navbar from '@/components/Navbar'
 import { isAuthEnabled } from '@/lib/session'
+import { activityTypeSchema } from '@/lib/schemas'
+import { isoWeekRangeUtc } from '@/lib/dates'
 import styles from './page.module.css'
 
 const ITEMS_PER_PAGE = 5
 const SUGGESTIONS_LIMIT = 20
 
 async function getStats() {
-  const now = new Date()
-  const startOfWeek = new Date(now)
-  startOfWeek.setDate(now.getDate() - now.getDay())
-  startOfWeek.setHours(0, 0, 0, 0)
+  // Settimana ISO (lunedì → lunedì), coerente con /oggi e con il calendario
+  const week = isoWeekRangeUtc()
 
-  const [totalAggr, weekAggr, totalCount] = await Promise.all([
+  const [totalAggr, weekAggr, totalCount, clientCount] = await Promise.all([
     prisma.timeEntry.aggregate({ _sum: { duration: true } }),
     prisma.timeEntry.aggregate({
-      where: { date: { gte: startOfWeek } },
+      where: { date: { gte: week.start, lt: week.end } },
       _sum: { duration: true },
     }),
     prisma.timeEntry.count(),
+    prisma.client.count(),
   ])
 
   return {
     totalMin: totalAggr._sum.duration || 0,
     weekMin: weekAggr._sum.duration || 0,
     totalCount,
+    clientCount,
   }
 }
 
@@ -50,10 +52,10 @@ async function getData(page: number, filters: Filters) {
       lt: new Date(Date.UTC(y, m, 1)),
     }
   }
-  const validTypes = ['SUPPORTO', 'MANUTENZIONE', 'PERMESSO', 'FERIE']
-  if (filters.type && validTypes.includes(filters.type)) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    where.activityType = filters.type as any
+  // Derivato dallo schema: non può divergere dalle opzioni della FilterBar né dall'export
+  const parsedType = activityTypeSchema.safeParse(filters.type)
+  if (parsedType.success) {
+    where.activityType = parsedType.data
   }
   if (filters.client) {
     where.client = { name: filters.client }
@@ -103,7 +105,7 @@ export default async function Home({
   ])
 
   const { entries, total, clients, projects, tags } = data
-  const { totalMin, weekMin, totalCount } = stats
+  const { totalMin, weekMin, totalCount, clientCount } = stats
 
   const totalHours = (totalMin / 60).toFixed(1)
   const weekHours = (weekMin / 60).toFixed(1)
@@ -134,7 +136,7 @@ export default async function Home({
         </div>
         <div className={styles.statCard}>
           <p className={styles.statLabel}>Clienti</p>
-          <p className={styles.statValue}>{clients.length}</p>
+          <p className={styles.statValue}>{clientCount}</p>
         </div>
       </div>
 

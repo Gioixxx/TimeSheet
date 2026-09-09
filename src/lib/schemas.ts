@@ -10,7 +10,8 @@ export const timeEntrySchema = z.object({
     .number({ invalid_type_error: 'Inserisci un numero' })
     .int()
     .min(1, 'Minimo 1 minuto')
-    .max(14400, 'Massimo 30 giorni'),
+    // 14400 minuti = 240 ore = 30 giorni lavorativi da 480 min (unità usata per le FERIE)
+    .max(14400, 'Massimo 240 ore (30 giorni di ferie)'),
   date: z.string().min(1, 'La data è obbligatoria'),
   clientName: z.string().optional(),
   projectName: z.string().optional(),

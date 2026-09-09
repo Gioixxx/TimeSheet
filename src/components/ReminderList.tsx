@@ -2,7 +2,7 @@ import { prisma } from '@/lib/prisma'
 import { Bell, RefreshCw } from 'lucide-react'
 import ReminderForm from './ReminderForm'
 import ReminderActions from './ReminderActions'
-import { recurrenceLabel } from '@/lib/reminder-recurrence'
+import { currentOccurrence, recurrenceLabel } from '@/lib/reminder-recurrence'
 import styles from './ReminderBoard.module.css'
 
 const TZ = 'Europe/Rome'
@@ -32,10 +32,17 @@ function formatDateTime(date: Date): string {
 
 export default async function ReminderList() {
   const now = new Date()
-  const reminders = await prisma.reminder.findMany({
+  const rows = await prisma.reminder.findMany({
     where: { isCompleted: false },
     orderBy: { scheduledAt: 'asc' },
   })
+
+  // Per un ricorrente `scheduledAt` è solo l'inizio della serie: la data da mostrare (e su cui
+  // ordinare) è l'occorrenza rilevante adesso, non quella di partenza.
+  const reminders = rows
+    .map((r) => ({ r, occurrence: currentOccurrence(r, now) }))
+    .filter((x): x is { r: (typeof rows)[number]; occurrence: Date } => x.occurrence !== null)
+    .sort((a, b) => a.occurrence.getTime() - b.occurrence.getTime())
 
   return (
     <div className={styles.board}>
@@ -56,8 +63,8 @@ export default async function ReminderList() {
         </p>
       ) : (
         <ul className={styles.reminderList}>
-          {reminders.map((r) => {
-            const isPast = r.scheduledAt <= now
+          {reminders.map(({ r, occurrence }) => {
+            const isPast = occurrence <= now
             const isNotified = r.notifiedAt !== null
             const recLabel = recurrenceLabel(r.recurrence)
             return (
@@ -75,7 +82,7 @@ export default async function ReminderList() {
                       </span>
                     )}
                     <span className={`${styles.reminderTime} ${isPast ? styles.reminderTimeOverdue : ''}`}>
-                      {isPast ? '⚠ ' : ''}{formatDateTime(r.scheduledAt)}
+                      {isPast ? '⚠ ' : ''}{formatDateTime(occurrence)}
                     </span>
                   </div>
                 </div>

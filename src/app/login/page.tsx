@@ -1,3 +1,4 @@
+import { Suspense } from 'react'
 import { connection } from 'next/server'
 import { redirect } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
@@ -22,7 +23,10 @@ export default async function LoginPage() {
 
   return (
     <AuthCard title="Timesheet" subtitle="Accedi per continuare">
-      <LoginForm />
+      {/* LoginForm legge ?from= con useSearchParams: richiede un boundary Suspense */}
+      <Suspense>
+        <LoginForm />
+      </Suspense>
     </AuthCard>
   )
 }

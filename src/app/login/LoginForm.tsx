@@ -1,15 +1,20 @@
 'use client'
 
 import { useActionState } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { login, type AuthActionState } from '@/lib/auth-actions'
 import styles from '@/components/AuthCard.module.css'
 
 export default function LoginForm() {
   const [state, action, pending] = useActionState<AuthActionState, FormData>(login, undefined)
+  // Path richiesto prima del redirect al login, impostato da src/proxy.ts.
+  // La validazione (solo path interni) sta lato server in `login`.
+  const from = useSearchParams().get('from') ?? ''
 
   return (
     <form action={action} className={styles.form}>
       {state?.error && <p className={styles.error}>{state.error}</p>}
+      <input type="hidden" name="from" value={from} />
       <div className={styles.field}>
         <label className={styles.label} htmlFor="username">
           Username

@@ -76,6 +76,8 @@ let serverProcess = null;
 let tray = null;
 /** @type {ReturnType<typeof setInterval> | null} */
 let reminderPollInterval = null;
+/** @type {ReturnType<typeof setInterval> | null} */
+let emailPollInterval = null;
 
 function waitForServer(port, maxAttempts = 60) {
   return new Promise((resolve, reject) => {
@@ -226,7 +228,9 @@ function startServer(projectRoot, port) {
     return spawn(isWin ? "npm.cmd" : "npm", ["run", "dev", "--", "-p", String(port)], {
       cwd: projectRoot,
       shell: true,
-      env: { ...process.env, PORT: String(port) },
+      // Segnala a src/instrumentation.ts che il polling email è già gestito da questo
+      // processo: senza il flag, in dev il poller girerebbe due volte (qui e in-process).
+      env: { ...process.env, TIMESHEET_EMAIL_POLL_EXTERNAL: "1", PORT: String(port) },
       stdio: "inherit",
     });
   }
@@ -241,6 +245,7 @@ function startServer(projectRoot, port) {
     env: {
       ...process.env,
       ELECTRON_RUN_AS_NODE: "1",
+      TIMESHEET_EMAIL_POLL_EXTERNAL: "1",
       PORT: String(port),
       NODE_ENV: "production",
       DATABASE_URL: databaseUrlForPath(dbPath),
@@ -302,7 +307,7 @@ app.whenReady().then(() => {
           })
           .catch(() => {});
       pollEmail();
-      setInterval(pollEmail, 5 * 60 * 1000);
+      emailPollInterval = setInterval(pollEmail, 5 * 60 * 1000);
     })
     .catch((err) => {
       console.error(err);
@@ -320,6 +325,10 @@ app.on("before-quit", () => {
   if (reminderPollInterval) {
     clearInterval(reminderPollInterval);
     reminderPollInterval = null;
+  }
+  if (emailPollInterval) {
+    clearInterval(emailPollInterval);
+    emailPollInterval = null;
   }
   stopServer();
 });

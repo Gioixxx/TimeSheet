@@ -2,10 +2,10 @@
 import React from 'react'
 import { usePathname } from 'next/navigation'
 import Link from 'next/link'
-import { List, CalendarDays, Sun, LogOut } from 'lucide-react'
+import { List, CalendarDays, Sun } from 'lucide-react'
 import SearchBar from './SearchBar'
 import { ThemeSelector } from './ThemeSelector'
-import { logout } from '@/lib/auth-actions'
+import LogoutButton from './LogoutButton'
 import styles from './Navbar.module.css'
 
 const MONTH_NAMES = [
@@ -51,13 +51,7 @@ export default function Navbar({
           <Link href="/oggi" className={styles.navLink}><Sun size={14} />Oggi</Link>
         )}
         <ThemeSelector />
-        {showLogout && (
-          <form action={logout}>
-            <button type="submit" className={styles.navLink} title="Esci" aria-label="Esci">
-              <LogOut size={14} />
-            </button>
-          </form>
-        )}
+        {showLogout && <LogoutButton />}
       </nav>
     </header>
   )

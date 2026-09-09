@@ -45,11 +45,18 @@ export default function NotificationManager() {
 
     if (!('Notification' in window)) return
 
+    // `requestPermission()` resta in sospeso finché l'utente non risponde al prompt: se il
+    // componente si smonta prima (navigazione, doppio mount di StrictMode), senza questo flag
+    // la cleanup girerebbe a vuoto e l'interval creato dopo non verrebbe mai fermato.
+    let cancelled = false
+    let intervalId: ReturnType<typeof setInterval> | undefined
+
     const requestAndPoll = async () => {
       if (Notification.permission === 'default') {
         await Notification.requestPermission()
       }
 
+      if (cancelled) return
       if (Notification.permission !== 'granted') return
 
       const poll = async () => {
@@ -75,14 +82,13 @@ export default function NotificationManager() {
       }
 
       poll()
-      const id = setInterval(poll, POLL_INTERVAL)
-      return id
+      intervalId = setInterval(poll, POLL_INTERVAL)
     }
 
-    let intervalId: ReturnType<typeof setInterval> | undefined
-    requestAndPoll().then((id) => { intervalId = id })
+    requestAndPoll()
 
     return () => {
+      cancelled = true
       if (intervalId !== undefined) clearInterval(intervalId)
     }
   }, [])

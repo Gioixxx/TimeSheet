@@ -1,0 +1,5 @@
+# Gli script eseguiti nel container devono restare LF: con CRLF lo shebang non viene
+# riconosciuto e l'ENTRYPOINT fallisce con "no such file or directory".
+*.sh text eol=lf
+Dockerfile text eol=lf
+docker-entrypoint.sh text eol=lf

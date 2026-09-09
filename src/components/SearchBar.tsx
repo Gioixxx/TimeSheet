@@ -133,7 +133,7 @@ export default function SearchBar() {
           )}
 
           {!loading && results.map((entry) => (
-            <div key={entry.id} className={styles.result} role="option">
+            <div key={entry.id} className={styles.result} role="option" aria-selected={false}>
               <div className={styles.resultTop}>
                 <span className={styles.resultTitle}>{entry.title}</span>
                 <div className={styles.resultRight}>

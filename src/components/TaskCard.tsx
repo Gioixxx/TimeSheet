@@ -2,6 +2,7 @@
 
 import { useRef, useTransition, useState } from 'react'
 import { X, Play, User, Briefcase, Clock, Pencil } from 'lucide-react'
+import { todayLocalIso } from '@/lib/dates'
 import { deleteTask, logTaskAsEntry, updateTask } from '@/app/actions'
 import styles from './TaskBoard.module.css'
 
@@ -29,7 +30,7 @@ export default function TaskCard({ task }: { task: Task }) {
   const [stimaOre, setStimaOre] = useState(initOre)
   const [stimaMin, setStimaMin] = useState(initMin)
 
-  const today = new Date().toISOString().split('T')[0]
+  const today = todayLocalIso()
 
   const handleLog = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()

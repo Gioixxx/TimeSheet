@@ -1,6 +1,6 @@
 # Audit bug — TimeSheet
 
-**Data:** 2026-09-08
+**Data:** 2026-09-08 — **risolto il 2026-09-09** (vedi *Stato* nella tabella)
 **Commit base:** `main` @ `04906d1`
 **Metodo:** analisi statica dell'intero sorgente (`src/`, `electron/`, `prisma/`, `public/`, Docker, CI).
 **Limite noto:** non è stato possibile eseguire `npm run build`, `lint` o test — vedi bug #1. Tutti i
@@ -18,28 +18,28 @@ Legenda severità:
 
 ## Riepilogo
 
-| # | Severità | Area | Problema |
-|---|---|---|---|
-| 1 | A | Tooling | Hook `.claude/settings.json` con path Windows assoluto: rompe il repo fuori dalla macchina dell'autore |
-| 2 | A | Filtri | Filtro "Straordinario" nella home non filtra nulla |
-| 3 | A | Date | "Oggi" calcolato in UTC nei form, in locale nelle pagine: voci sul giorno sbagliato dopo mezzanotte |
-| 4 | A | Statistiche | "Questa settimana" parte da domenica in `/`, da lunedì in `/oggi`: due valori diversi per la stessa etichetta |
-| 5 | A | PWA | Il service worker mette in cache pagine e API autenticate; restano leggibili dopo il logout |
-| 6 | M | Reminder | Ricorrenza mensile sul giorno 29–31 slitta in modo permanente |
-| 7 | M | Reminder | Completare un'occorrenza cancella l'intera serie ricorrente |
-| 8 | M | Reminder | La lista mostra `scheduledAt` originale invece della prossima occorrenza |
-| 9 | M | Email | `fetch('1:*')` scarica tutta la casella a ogni poll, non solo i messaggi non letti |
-| 10 | M | Email | Deduplica e fetch basati su numero di sequenza IMAP: instabile, può saltare o incrociare messaggi |
-| 11 | M | Statistiche | La stat "Clienti" mostra al massimo 20 |
-| 12 | M | Sicurezza | Le Server Action non ricontrollano la sessione (unica difesa: `proxy.ts`) |
-| 13 | M | PWA | `cache.addAll(['/'])` fallisce l'install del SW quando l'auth è attiva |
-| 14 | M | React | `NotificationManager` può lasciare un `setInterval` orfano |
-| 15 | B | Electron | Il guard anti-doppio-poll email non funziona in dev |
-| 16 | B | Robustezza | `advanceByRecurrence` può ciclare all'infinito su una ricorrenza non valida |
-| 17 | B | Validazione | Messaggio di errore sulla durata massima incoerente col limite reale |
-| 18 | B | UX | Il parametro `?from=` del redirect di login è ignorato |
-| 19 | B | UX | Flash del tema di default a ogni caricamento |
-| 20 | B | Docker | Il container gira come `root` |
+| # | Severità | Area | Problema | Stato |
+|---|---|---|---|---|
+| 1 | A | Tooling | Hook `.claude/settings.json` con path Windows assoluto: rompe il repo fuori dalla macchina dell'autore | ✅ `7b2a987` |
+| 2 | A | Filtri | Filtro "Straordinario" nella home non filtra nulla | ✅ risolto |
+| 3 | A | Date | "Oggi" calcolato in UTC nei form, in locale nelle pagine: voci sul giorno sbagliato dopo mezzanotte | ✅ risolto |
+| 4 | A | Statistiche | "Questa settimana" parte da domenica in `/`, da lunedì in `/oggi`: due valori diversi per la stessa etichetta | ✅ risolto |
+| 5 | A | PWA | Il service worker mette in cache pagine e API autenticate; restano leggibili dopo il logout | ✅ risolto |
+| 6 | M | Reminder | Ricorrenza mensile sul giorno 29–31 slitta in modo permanente | ✅ risolto |
+| 7 | M | Reminder | Completare un'occorrenza cancella l'intera serie ricorrente | ✅ risolto |
+| 8 | M | Reminder | La lista mostra `scheduledAt` originale invece della prossima occorrenza | ✅ risolto |
+| 9 | M | Email | `fetch('1:*')` scarica tutta la casella a ogni poll, non solo i messaggi non letti | ✅ risolto |
+| 10 | M | Email | Deduplica e fetch basati su numero di sequenza IMAP: instabile, può saltare o incrociare messaggi | ✅ risolto |
+| 11 | M | Statistiche | La stat "Clienti" mostra al massimo 20 | ✅ risolto |
+| 12 | M | Sicurezza | Le Server Action non ricontrollano la sessione (unica difesa: `proxy.ts`) | ✅ risolto |
+| 13 | M | PWA | `cache.addAll(['/'])` fallisce l'install del SW quando l'auth è attiva | ✅ risolto |
+| 14 | M | React | `NotificationManager` può lasciare un `setInterval` orfano | ✅ risolto |
+| 15 | B | Electron | Il guard anti-doppio-poll email non funziona in dev | ✅ risolto |
+| 16 | B | Robustezza | `advanceByRecurrence` può ciclare all'infinito su una ricorrenza non valida | ✅ risolto |
+| 17 | B | Validazione | Messaggio di errore sulla durata massima incoerente col limite reale | ✅ chiarito (vedi nota) |
+| 18 | B | UX | Il parametro `?from=` del redirect di login è ignorato | ✅ risolto |
+| 19 | B | UX | Flash del tema di default a ogni caricamento | ✅ risolto |
+| 20 | B | Docker | Il container gira come `root` | ✅ risolto |
 
 ---
 
@@ -501,12 +501,50 @@ Per completezza, cose controllate che **non** sono bug:
 
 ---
 
-## Ordine di intervento suggerito
+## Esito — 2026-09-09
 
-1. **#1** — sblocca tooling e test per chiunque non sia sulla macchina dell'autore.
-2. **#2, #4, #11** — bug di correttezza dei dati mostrati, fix di poche righe l'uno.
-3. **#3** — una helper condivisa per "oggi"; tocca due componenti.
-4. **#5, #13** — service worker; conviene rivederlo in un colpo solo.
-5. **#6, #7, #8** — semantica delle ricorrenze; da affrontare come blocco unico.
-6. **#9, #10** — passaggio del poller agli UID + `search({ seen: false })`.
-7. Il resto a scelta.
+Tutti e 20 i punti sono stati affrontati. Note su ciò che è emerso applicandoli:
+
+- **#17 non era un bug di limite ma di formulazione.** 14400 minuti sono 240 ore, che in questa
+  app sono esattamente **30 giorni lavorativi**: la giornata vale 480 minuti ovunque (`FERIE`,
+  breakdown di `/oggi`, straordinari in `export-data.ts`). Il limite era corretto, ambiguo era il
+  messaggio per le voci non-FERIE — ora dice "Massimo 240 ore (30 giorni di ferie)".
+
+- **#3 richiedeva anche il fuso del server, non solo la helper.** Il container non impostava `TZ`
+  e girava in UTC, mentre il browser è su Europe/Rome: qualunque calcolo di "oggi" fatto lato
+  server sarebbe rimasto sfasato, e il campo Data precompilato avrebbe divergiuto fra render
+  server e client. Aggiunto `TZ=Europe/Rome` (con `tzdata`) nel `Dockerfile`, sovrascrivibile dal
+  compose. Le finestre giorno/settimana sono ora costruite in UTC a partire dal giorno *locale*
+  (`src/lib/dates.ts`), quindi corrette anche a offset negativo — la nota latente su UTC−5 è
+  chiusa.
+
+- **#8 non si risolveva con `nextOccurrence`.** Quella funzione risponde a "quale occorrenza devo
+  ancora notificare" e parte da `notifiedAt`: su un reminder mai notificato restituisce la data di
+  creazione, quindi la lista avrebbe continuato a mostrare "18 ago". Aggiunta
+  `currentOccurrence()`, che restituisce l'occorrenza *rilevante adesso* — l'ultima già dovuta, o
+  la prima futura se la serie non è ancora iniziata. `/api/reminders/upcoming` resta su
+  `nextOccurrence`, che lì è la semantica giusta.
+
+- **#6 non bastava saturare.** Saturare al fine mese corregge 31 gennaio → 28 febbraio, ma il
+  passo successivo ripartirebbe dal 28 (→ 28 marzo): la deriva resterebbe, solo più lenta.
+  `advanceByRecurrence` accetta ora un `anchorDay`, il giorno del mese della serie, così il 31
+  torna il 31 non appena il mese lo consente.
+
+- **#15: il flag riusava una variabile riservata.** Il guard si basava su `ELECTRON_RUN_AS_NODE`,
+  che è una variabile con un significato proprio per Electron. Introdotto
+  `TIMESHEET_EMAIL_POLL_EXTERNAL`, impostato sia in dev sia nel pacchetto;
+  `ELECTRON_RUN_AS_NODE` resta accettato per i build già distribuiti.
+
+- **#20 poteva rompere il deploy esistente.** Un `USER node` secco non basta: il volume
+  `timesheet-data` esiste già con ownership `root`, e l'app non avrebbe più potuto scrivere il
+  database. Il nuovo `docker-entrypoint.sh` parte da root solo per allineare i permessi di
+  `/data`, poi cede i privilegi con `gosu`.
+
+### Trovato applicando i fix, non nell'audit originale
+
+- **"Questa settimana" non aveva limite superiore** (`gte` senza `lt`), in *entrambe* le pagine:
+  la card sommava anche le voci datate nelle settimane successive. Con una voce futura da 5h il
+  totale passava da 4.5h a 9.5h. Chiuso con `isoWeekRangeUtc()`.
+- `role="option"` senza `aria-selected` in `SearchBar`, e alcuni problemi di lint preesistenti
+  (import inutilizzato, direttiva `eslint-disable` orfana, `require` segnalato nel main process
+  Electron che è CommonJS per necessità). Lint passa ora da 6 errori a 0.

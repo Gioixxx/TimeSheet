@@ -1,8 +1,13 @@
 'use client'
 
 import { useRef, useState, useTransition } from 'react'
-import { Check, Trash2, Pencil, X, Save } from 'lucide-react'
-import { completeReminder, deleteReminder, updateReminder } from '@/app/actions'
+import { Check, CheckCheck, Trash2, Pencil, X, Save } from 'lucide-react'
+import {
+  completeReminder,
+  completeReminderSeries,
+  deleteReminder,
+  updateReminder,
+} from '@/app/actions'
 import { toDatetimeLocal } from './ReminderForm'
 import styles from './ReminderBoard.module.css'
 
@@ -20,8 +25,11 @@ type RecurrenceValue = '' | 'DAILY' | 'WEEKLY' | 'MONTHLY' | 'YEARLY'
 export default function ReminderActions({ reminder }: { reminder: ReminderData }) {
   const dialogRef = useRef<HTMLDialogElement>(null)
   const [isCompleting, startComplete] = useTransition()
+  const [isClosingSeries, startCloseSeries] = useTransition()
   const [isDeleting, startDelete] = useTransition()
   const [isSaving, startSave] = useTransition()
+
+  const isRecurring = reminder.recurrence !== null && reminder.recurrence !== ''
 
   // Stato form di modifica
   const [title, setTitle] = useState(reminder.title)
@@ -58,7 +66,7 @@ export default function ReminderActions({ reminder }: { reminder: ReminderData }
     })
   }
 
-  const busy = isCompleting || isDeleting || isSaving
+  const busy = isCompleting || isClosingSeries || isDeleting || isSaving
 
   return (
     <>
@@ -67,11 +75,23 @@ export default function ReminderActions({ reminder }: { reminder: ReminderData }
           className={styles.reminderCompleteBtn}
           onClick={() => startComplete(() => completeReminder(reminder.id))}
           disabled={busy}
-          title="Segna come completato"
+          title={isRecurring ? 'Segna come fatta questa occorrenza' : 'Segna come completato'}
         >
           <Check size={11} />
           Fatto
         </button>
+        {isRecurring && (
+          <button
+            className={styles.reminderCompleteBtn}
+            onClick={() => startCloseSeries(() => completeReminderSeries(reminder.id))}
+            disabled={busy}
+            title="Termina l'intera serie ricorrente"
+            aria-label="Termina serie"
+          >
+            <CheckCheck size={11} />
+            Serie
+          </button>
+        )}
         <button
           className={styles.reminderEditBtn}
           onClick={openDialog}

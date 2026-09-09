@@ -53,34 +53,44 @@ export async function pollEmails(): Promise<PollResult> {
 
     const lock = await client.getMailboxLock(config.mailbox)
     try {
-      // Fetch all UNSEEN messages
-      const messages = client.fetch('1:*', {
-        envelope: true,
-        bodyStructure: true,
-        source: false,
-      }, { uid: false })
+      // Solo i messaggi non letti: senza criterio di ricerca si scorreva l'intera casella a
+      // ogni poll (una query di deduplica per messaggio, ogni 5 minuti).
+      const unseenUids = await client.search({ seen: false }, { uid: true })
 
-      const toProcess: Array<{ seq: number; messageId: string; from: string; subject: string }> = []
+      const toProcess: Array<{ uid: number; messageId: string; from: string; subject: string }> = []
 
-      for await (const msg of messages) {
-        const messageId = msg.envelope?.messageId ?? `seq-${msg.seq}`
-        const from = extractAddress(msg.envelope?.from?.[0])
-        const subject = msg.envelope?.subject ?? ''
+      if (unseenUids && unseenUids.length > 0) {
+        // Gli UID sono stabili all'interno della mailbox: i numeri di sequenza si rinumerano
+        // a ogni cancellazione, e fra la fase di scansione e quella di fetch il corpo
+        // recuperato poteva appartenere a un altro messaggio.
+        const messages = client.fetch(
+          unseenUids,
+          { envelope: true, bodyStructure: true, source: false },
+          { uid: true },
+        )
 
-        // Skip if already processed
-        const already = await prisma.processedEmail.findUnique({ where: { messageId } })
-        if (already) {
-          skipped++
-          continue
+        for await (const msg of messages) {
+          // `uid-N` come chiave di ripiego: stabile, a differenza del numero di sequenza, che
+          // poteva far saltare un messaggio nuovo che ne ereditava la posizione.
+          const messageId = msg.envelope?.messageId ?? `uid-${msg.uid}`
+          const from = extractAddress(msg.envelope?.from?.[0])
+          const subject = msg.envelope?.subject ?? ''
+
+          // Skip if already processed
+          const already = await prisma.processedEmail.findUnique({ where: { messageId } })
+          if (already) {
+            skipped++
+            continue
+          }
+
+          // Check allowed senders
+          if (config.allowedSenders.length > 0 && !config.allowedSenders.some((s) => from.includes(s))) {
+            skipped++
+            continue
+          }
+
+          toProcess.push({ uid: msg.uid, messageId, from, subject })
         }
-
-        // Check allowed senders
-        if (config.allowedSenders.length > 0 && !config.allowedSenders.some((s) => from.includes(s))) {
-          skipped++
-          continue
-        }
-
-        toProcess.push({ seq: msg.seq, messageId, from, subject })
       }
 
       // Anagrafica cliente/progetto per l'arricchimento AI — una sola query per l'intero poll,
@@ -95,12 +105,13 @@ export async function pollEmails(): Promise<PollResult> {
       const projectNames = projects.map((p) => p.name)
 
       // Now fetch full body for each message to process
-      for (const { seq, messageId, from, subject } of toProcess) {
+      for (const { uid, messageId, from, subject } of toProcess) {
         try {
-          const fullMsg = await client.fetchOne(`${seq}`, {
-            bodyParts: ['TEXT'],
-            source: true,
-          })
+          const fullMsg = await client.fetchOne(
+            `${uid}`,
+            { bodyParts: ['TEXT'], source: true },
+            { uid: true },
+          )
 
           // Parse source to extract plain text and html parts
           const source = fullMsg && fullMsg.source ? fullMsg.source.toString('utf-8') : ''
@@ -141,7 +152,7 @@ export async function pollEmails(): Promise<PollResult> {
           })
 
           // Mark as read on IMAP
-          await client.messageFlagsAdd(`${seq}`, ['\\Seen'])
+          await client.messageFlagsAdd(`${uid}`, ['\\Seen'], { uid: true })
 
           created++
         } catch (err) {
@@ -180,7 +191,6 @@ function extractTextFromRawEmail(source: string): string {
   // Find all text/plain sections in multipart
   const textPlainRegex = /Content-Type:\s*text\/plain[^\r\n]*/gi
   let match: RegExpExecArray | null
-  // eslint-disable-next-line no-cond-assign
   while ((match = textPlainRegex.exec(source)) !== null) {
     const start = match.index
     // Find the blank line that separates headers from body

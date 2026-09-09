@@ -13,6 +13,14 @@ const eslintConfig = defineConfig([
     "build/**",
     "next-env.d.ts",
   ]),
+  {
+    // Il main process di Electron è CommonJS per necessità (`.cjs`, caricato da Electron
+    // stesso): `require` è la forma corretta, non un residuo da migrare a ESM.
+    files: ["electron/**/*.cjs", "*.cjs"],
+    rules: {
+      "@typescript-eslint/no-require-imports": "off",
+    },
+  },
 ]);
 
 export default eslintConfig;

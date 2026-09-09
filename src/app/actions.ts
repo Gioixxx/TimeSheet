@@ -3,6 +3,9 @@
 import { revalidatePath } from 'next/cache'
 import { prisma } from '@/lib/prisma'
 import { timeEntrySchema } from '@/lib/schemas'
+import { todayLocalIso } from '@/lib/dates'
+import { nextOccurrence, parseRecurrenceRule } from '@/lib/reminder-recurrence'
+import { verifySession } from '@/lib/dal'
 import {
   parseNaturalLanguageToTimeEntry,
   type ParseNlResult,
@@ -47,6 +50,7 @@ async function resolveRelations(data: ReturnType<typeof timeEntrySchema.parse>) 
 }
 
 export async function createTimeEntry(raw: unknown) {
+  await verifySession()
   const data = timeEntrySchema.parse(raw)
   const { clientId, projectId, tagRecords } = await resolveRelations(data)
 
@@ -69,6 +73,7 @@ export async function createTimeEntry(raw: unknown) {
 }
 
 export async function updateTimeEntry(id: string, raw: unknown) {
+  await verifySession()
   const data = timeEntrySchema.parse(raw)
   const { clientId, projectId, tagRecords } = await resolveRelations(data)
 
@@ -92,6 +97,7 @@ export async function updateTimeEntry(id: string, raw: unknown) {
 }
 
 export async function deleteTimeEntry(id: string) {
+  await verifySession()
   await prisma.timeEntry.delete({ where: { id } })
   revalidatePath('/')
   revalidatePath('/oggi')
@@ -111,6 +117,7 @@ const taskSchema = z.object({
 })
 
 export async function createTask(raw: unknown) {
+  await verifySession()
   const data = taskSchema.parse(raw)
   await prisma.task.create({
     data: {
@@ -125,15 +132,24 @@ export async function createTask(raw: unknown) {
 }
 
 export async function deleteTask(id: string) {
+  await verifySession()
   await prisma.task.delete({ where: { id } })
   revalidatePath('/')
 }
 
-export async function updateTask(
-  id: string,
-  data: { title: string; notes?: string; clientName?: string; projectName?: string; estimatedMinutes?: number }
-) {
-  await prisma.task.update({ where: { id }, data })
+export async function updateTask(id: string, raw: unknown) {
+  await verifySession()
+  const data = taskSchema.parse(raw)
+  await prisma.task.update({
+    where: { id },
+    data: {
+      title: data.title.trim(),
+      notes: data.notes?.trim() || null,
+      clientName: data.clientName?.trim() || null,
+      projectName: data.projectName?.trim() || null,
+      estimatedMinutes: data.estimatedMinutes ?? null,
+    },
+  })
   revalidatePath('/')
 }
 
@@ -144,6 +160,7 @@ export async function logTaskAsEntry(
   activityType: 'SUPPORTO' | 'MANUTENZIONE',
   description?: string
 ) {
+  await verifySession()
   const task = await prisma.task.findUniqueOrThrow({ where: { id: taskId } })
   const entryData = timeEntrySchema.parse({
     title: task.title,
@@ -184,6 +201,7 @@ const reminderSchema = z.object({
 })
 
 export async function createReminder(raw: unknown) {
+  await verifySession()
   const data = reminderSchema.parse(raw)
   await prisma.reminder.create({
     data: {
@@ -200,6 +218,7 @@ export async function createReminder(raw: unknown) {
 }
 
 export async function updateReminder(id: string, raw: unknown) {
+  await verifySession()
   const data = reminderSchema.parse(raw)
   await prisma.reminder.update({
     where: { id },
@@ -219,17 +238,53 @@ export async function updateReminder(id: string, raw: unknown) {
 }
 
 export async function deleteReminder(id: string) {
+  await verifySession()
   await prisma.reminder.delete({ where: { id } })
   revalidatePath('/')
   revalidatePath('/oggi')
   revalidatePath('/calendario', 'layout')
 }
 
+/**
+ * Segna come completata la *singola occorrenza* corrente.
+ *
+ * Su un reminder ricorrente `isCompleted` chiuderebbe l'intera serie per sempre: al suo posto
+ * si avanza `notifiedAt` all'occorrenza appena spuntata, così `nextOccurrence()` restituisce
+ * la successiva. La serie viene chiusa solo quando non ci sono più occorrenze (oltre
+ * `recurrenceEnd`). Per terminare una serie ancora attiva c'è `completeReminderSeries`.
+ */
 export async function completeReminder(id: string) {
-  await prisma.reminder.update({
-    where: { id },
-    data: { isCompleted: true },
-  })
+  await verifySession()
+
+  const reminder = await prisma.reminder.findUniqueOrThrow({ where: { id } })
+  const rule = parseRecurrenceRule(reminder.recurrence)
+
+  if (!rule) {
+    await prisma.reminder.update({ where: { id }, data: { isCompleted: true } })
+  } else {
+    const current = nextOccurrence(reminder)
+    if (current === null) {
+      // Serie già esaurita: non resta nulla da spuntare
+      await prisma.reminder.update({ where: { id }, data: { isCompleted: true } })
+    } else {
+      const advanced = { ...reminder, notifiedAt: current }
+      const hasMore = nextOccurrence(advanced) !== null
+      await prisma.reminder.update({
+        where: { id },
+        data: hasMore ? { notifiedAt: current } : { notifiedAt: current, isCompleted: true },
+      })
+    }
+  }
+
+  revalidatePath('/')
+  revalidatePath('/oggi')
+  revalidatePath('/calendario', 'layout')
+}
+
+/** Chiude l'intera serie ricorrente (o il singolo reminder), senza altre occorrenze. */
+export async function completeReminderSeries(id: string) {
+  await verifySession()
+  await prisma.reminder.update({ where: { id }, data: { isCompleted: true } })
   revalidatePath('/')
   revalidatePath('/oggi')
   revalidatePath('/calendario', 'layout')
@@ -241,18 +296,21 @@ export async function completeReminder(id: string) {
 import { pollEmails, type PollResult } from '@/lib/email-poller'
 
 export async function triggerEmailPoll(): Promise<PollResult> {
+  await verifySession()
   return pollEmails()
 }
 
 // ── AI parsing ───────────────────────────────────────────────────────────────
 
 export async function parseNaturalLanguageTimeEntry(text: string): Promise<ParseNlResult> {
+  await verifySession()
+
   const [clients, projects] = await Promise.all([
     prisma.client.findMany({ select: { name: true }, orderBy: { name: 'asc' } }),
     prisma.project.findMany({ select: { name: true }, orderBy: { name: 'asc' } }),
   ])
 
-  const referenceDate = new Date().toISOString().slice(0, 10)
+  const referenceDate = todayLocalIso()
   const result = await parseNaturalLanguageToTimeEntry(text, {
     referenceDate,
     clientNames: clients.map((c) => c.name),
