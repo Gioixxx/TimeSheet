@@ -37,6 +37,8 @@ Stato del lavoro in corso. Aggiornato con `/sprint`.
 - [x] Impedisce al service worker di cachare pagine di login
 - [x] Aggiornata la memoria del progetto (fix login Calendario/Oggi)
 - [x] Aggiunta la funzionalità di login per l'istanza esposta su internet
+- [x] Aggiunto supporto per il formato Excel (.xlsx) con filtri UI e totale generale
+- [x] Aggiunta funzionalità di export CSV con ordinamento e calcoli riassuntivi
 
 ### Bloccati / In attesa
 

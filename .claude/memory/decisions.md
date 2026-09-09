@@ -40,3 +40,11 @@ Ogni decisione include motivazione e alternative valutate.
 **Perché:** Il container Docker non aveva mai avuto un trigger per `/api/email-poll` — il polling esisteva solo come side-effect del processo Electron. Sull'istanza esposta su internet nessuna email veniva mai recuperata da quando la feature email-to-task è stata introdotta (bug preesistente, scoperto solo testando il flusso end-to-end).
 **Alternative scartate:** sidecar/cron in `docker-compose.yml` — scartato per restare aderenti alla filosofia "zero dipendenze aggiuntive"; l'hook `instrumentation.ts` (stabile da Next.js v15) copre il caso senza servizi in più.
 **Impatto:** `src/instrumentation.ts` (nuovo). Nessuna modifica a `docker-compose.yml`/`.env`, quindi deploy fatto con `force_update` invece di `deploy_app` — vedi [[tech-debt]].
+
+### Secondo server MCP `pi-deploy-remote` per deploy fuori dalla LAN del Pi
+
+**Data:** 2026-07-30
+**Decisione:** Aggiunto in `~/.claude.json` (config MCP globale, non nel repo) un secondo server `pi-deploy-remote` — stesso script (`C:/Dev/claude-libs/mcp/pi-deploy/server.py`), stesso user e stessa chiave SSH di `pi-deploy` — ma con `PI_DEPLOY_HOST=93.67.78.223` e `PI_DEPLOY_PORT=8888` invece di `192.168.1.50:22`. Il server `pi-deploy` di default resta invariato sull'IP LAN.
+**Perché:** Serve poter fare deploy/restart sul Pi anche quando non si è sulla stessa rete wifi (es. fuori casa) — l'host raggiunge il Pi solo tramite IP pubblico + port-forward del router (esterno `8888` → SSH `22` interno). Tenere due server MCP separati invece di riscrivere l'host in `pi-deploy` evita di dover ricordare di "rimettere a posto" l'IP LAN al rientro in rete — che sarebbe uno scenario a rischio di deploy falliti per host irraggiungibile.
+**Alternative scartate:** sovrascrivere `PI_DEPLOY_HOST`/`PI_DEPLOY_PORT` in `pi-deploy` volta per volta — scartato su richiesta esplicita dell'utente: il default deve restare sempre l'IP LAN, l'IP esterno è solo per casi eccezionali come questo.
+**Impatto:** solo config MCP globale (`~/.claude.json`, fuori dal repo). Richiede riavvio della sessione Claude Code dopo la modifica perché il nuovo server venga spawnato (le env var si leggono solo all'avvio del processo stdio). `server.py` non modificato — legge già `PI_DEPLOY_HOST`/`PORT`/`USER`/`SSH_KEY` da env, nessun cambiamento di codice necessario.
