@@ -61,6 +61,7 @@ export async function datasetToXlsx(dataset: ExportDataset): Promise<Buffer> {
   summary.columns = [
     { header: 'Cliente', key: 'client', width: 24 },
     { header: 'Progetto', key: 'project', width: 24 },
+    { header: 'Tipo attività', key: 'activityType', width: 16 },
     { header: 'Totale ore', key: 'totalHours', width: 13, style: { numFmt: HOURS_FMT } },
     { header: 'Straordinari (ore)', key: 'overtimeHours', width: 17, style: { numFmt: HOURS_FMT } },
   ]
@@ -69,6 +70,7 @@ export async function datasetToXlsx(dataset: ExportDataset): Promise<Buffer> {
     summary.addRow({
       client: s.client,
       project: s.project,
+      activityType: s.activityType,
       totalHours: s.totalHours,
       overtimeHours: s.overtimeHours,
     })
@@ -76,6 +78,7 @@ export async function datasetToXlsx(dataset: ExportDataset): Promise<Buffer> {
   const totalRow = summary.addRow({
     client: 'TOTALE',
     project: '',
+    activityType: '',
     totalHours: dataset.grandTotal.totalHours,
     overtimeHours: dataset.grandTotal.overtimeHours,
   })
