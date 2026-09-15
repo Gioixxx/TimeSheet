@@ -37,6 +37,14 @@ Aggiornato da `/session-end`.
 **Perché rimandato:** Il flusso manuale con `force_update` funziona come workaround immediato; non blocca i rilasci, solo li rende un passo manuale in più.
 **Impatto attuale:** Rischio di dimenticarsi di aggiornare dopo un push — l'app resta silenziosamente ferma alla versione precedente.
 **Risoluzione suggerita:** Usare `deploy_app` con `enable_watchtower=true` una volta risolto il problema di permessi qui sotto, oppure configurare Watchtower a mano sul Pi.
+**Aggiornamento 2026-09-15 — il rischio si è materializzato.** Al momento del rilascio di
+v1.3.0 il container girava ancora sull'immagine del **22 luglio**: le build del 24/07 (`04906d1`) e
+del 09/09 (`0704436`) erano su GHCR, verdi, ma **non erano mai state deployate**. Due mesi di lavoro
+fermi sul registry senza che nulla lo segnalasse — esattamente lo scenario "l'app resta
+silenziosamente ferma alla versione precedente" previsto qui sopra. Il salto è stato recuperato in
+un colpo solo con `force_update`. Finché Watchtower non è attivo, **controllare `docker inspect
+<app> --format '{{.Created}}'` prima di dare per scontato che il Pi sia allineato a `main`.**
+
 
 ### `deploy_app` fallisce con "Permission denied" su `/DATA/AppData/timesheet`
 **Priorità:** Media
@@ -46,6 +54,16 @@ Aggiornato da `/session-end`.
 **Descrizione:** Lo strumento MCP `deploy_app`, pensato per sincronizzare `docker-compose*.yml`/`.env*` verso il Pi e avviare i container, fallisce con `[Errno 13] Permission denied` — riproducibile due volte, non risolto rimuovendo `.env` locale dal set di file da sincronizzare, quindi l'errore non dipende dal contenuto locale ma probabilmente da permessi sul lato Pi (proprietario/ACL di `/DATA/AppData/timesheet`, gestito da CasaOS).
 **Aggiornamento 2026-07-16:** Riprodotto una terza volta con nessuna modifica a `docker-compose.yml`/`.env` in corso (deploy del fix `instrumentation.ts`, solo codice applicativo) — stesso errore generico `[Errno 13] Permission denied`. Conferma definitivamente che non dipende dal contenuto sincronizzato. Workaround usato con successo: quando il deploy non richiede modifiche a config, saltare `deploy_app` e usare solo `force_update` (build immagine via push su `main` → GH Actions → GHCR).
 **Aggiornamento 2026-07-17:** Riprodotto una quarta volta durante il fix del bug cookie `Secure`/HTTP (serviva aggiungere `COOKIE_SECURE: "false"` a `docker-compose.yml`). Workaround usato: modifica manuale del file da parte dell'utente via CasaOS/SSH. Scoperto un gotcha collegato: un semplice **restart** del container (via CasaOS o `docker restart`) **non** rilegge il `docker-compose.yml` aggiornato — le env var restano quelle con cui il container è stato creato l'ultima volta. Serve `docker compose up -d` (che ricrea il container se la config è cambiata) per far sì che le modifiche manuali abbiano davvero effetto. Rilevabile controllando il campo `CREATED`/`Up X` di `docker compose ps` (`app_status` del MCP `pi-deploy`): se non cambia dopo un "restart", la config vecchia è ancora in uso.
+**Aggiornamento 2026-09-15 — CAUSA TROVATA.** Ispezionato il Pi via SSH diretto (chiave
+`~/.ssh/id_ed25519_pi5_casaos`, host `pi5-casaos` in `~/.ssh/config`): `/DATA/AppData/timesheet`
+è `drwxr-xr-x root:root`, mentre l'utente SSH usato da `pi-deploy` è `gioixxx` (uid 1000). Non ha
+permesso di scrittura sulla directory, e l'MCP scrive via SFTP **senza** `sudo` — da qui l'
+`[Errno 13]`. Non c'entrano né il contenuto sincronizzato né CasaOS. `gioixxx` è nei gruppi `sudo`
+(passwordless, verificato) e `docker`, quindi il fix è a portata: `sudo chown -R gioixxx:gioixxx
+/DATA/AppData/timesheet`. Non applicato: esula dal rilascio in cui è stato scoperto, e va deciso se
+CasaOS si aspetta quei file di root. Nota: l'SSH diretto dalla macchina di sviluppo **funziona**
+solo passando la chiave esplicita (`ssh -i ~/.ssh/id_ed25519_pi5_casaos`), l'agent di default no.
+
 **Perché rimandato:** Non ho un accesso a shell generica sul Pi per ispezionare i permessi; serve intervento diretto dell'utente via SSH (`ls -la /DATA/AppData/timesheet`, `whoami`) per capire la causa. Come workaround, la modifica a `docker-compose.yml` è stata applicata a mano dall'utente, poi `force_update`/`docker compose up -d` ha ricreato il container leggendo la config aggiornata.
 **Impatto attuale:** Blocca l'uso di `deploy_app` per sincronizzare config future — ogni modifica a `docker-compose.yml`/`.env` sul Pi richiede editing manuale **seguito da una vera ricreazione del container**, non un semplice restart.
 **Risoluzione suggerita:** Verificare proprietario/permessi di `/DATA/AppData/timesheet` sul Pi e allinearli all'utente SSH usato da `pi-deploy`.

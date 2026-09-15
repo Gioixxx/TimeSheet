@@ -14,11 +14,15 @@ Stato del lavoro in corso. Aggiornato con `/sprint`.
 ### In corso
 
 - [ ] Watchtower non è mai stato attivo sul Pi — i deploy vanno spinti a mano con `force_update` finché non si configura
-- [ ] Diagnosticare il "Permission denied" di `deploy_app` verso `/DATA/AppData/timesheet` (impedisce il sync automatico di `docker-compose.yml`/`.env`)
+- [ ] `deploy_app` "Permission denied" su `/DATA/AppData/timesheet` — **causa trovata il 2026-09-15** (dir `root:root`, utente SSH `gioixxx` uid 1000, SFTP senza sudo). Fix noto e a un comando: `sudo chown -R gioixxx:gioixxx /DATA/AppData/timesheet`. Non applicato, vedi [[tech-debt]]
 - [ ] Verificare se iAPi funziona per il parsing NL nel form (`TimeEntryForm`, sostituito a Gemini) — in attesa che l'utente testi manualmente e riporti l'esito
 
 ### Completati
 
+- [x] **Rilascio v1.3.0 sul Pi (2026-09-15)** — merge del branch `claude/project-analysis-bug-check-br8h08`
+      su `main`, tag `v1.3.0`, build ARM64 verde, `force_update`. Verificato: container ricreato
+      (nuovo `ENTRYPOINT`), `No pending migrations to apply`, healthcheck `healthy`, processo non
+      più root (uid 1000), `/data` passato a `node:node`, `TZ` = CEST, `/` → 307 → `/login`
 - [x] Migliorato l'export: aggiunto formato Excel (.xlsx) formattato accanto al CSV, filtri UI rispettati, riga totale generale (v1.2.0)
 - [x] Login per l'istanza web esposta su CasaOS (v1.1.0) — vedi [[decisions]]
 - [x] Verificato in produzione: setup account, login, redirect corretti

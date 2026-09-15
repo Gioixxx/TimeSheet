@@ -8,7 +8,7 @@
 **Stack:** nextjs
 **Repo:** F:/Root Progetti/PROJECTS/TimeSheet
 **Team:** [chi lavora al progetto]
-**Ultimo aggiornamento:** 2026-07-17
+**Ultimo aggiornamento:** 2026-09-15
 
 ## Contesto rapido
 
@@ -33,5 +33,16 @@ TimeSheet è un'applicazione per la gestione delle schede attività, focalizzata
 - Le user stories US-001 e US-002 sono le priorità immediate per l'implementazione della registrazione del tempo.
 - L'app gira sia come Electron desktop locale (mai esposto) sia come Docker su CasaOS/Pi dell'utente (esposto su internet). Il login (vedi [[decisions]]) è gated dal flag `AUTH_ENABLED`: assente/false per Electron e dev locale, `"true"` solo in `docker-compose.yml`. Non dare per scontato che l'auth sia sempre attiva quando si modifica codice in quest'area.
 - L'istanza Docker/CasaOS è raggiunta su `http://myservergio.duckdns.org:3000` **senza TLS** (nessun reverse proxy davanti). Per questo `docker-compose.yml` imposta `COOKIE_SECURE: "false"` (vedi [[decisions]]) — altrimenti il browser scarta il cookie di sessione e ogni navigazione fresca torna al login. Non "correggere" rimuovendo questa var senza prima aggiungere TLS davanti all'app.
+- **SSH diretto al Pi funziona** e spesso è più veloce dell'MCP `pi-deploy` per diagnosticare:
+  `ssh -i ~/.ssh/id_ed25519_pi5_casaos gioixxx@192.168.1.50` (alias `pi5-casaos` in `~/.ssh/config`).
+  La chiave va passata **esplicita**: l'agent di default non ce l'ha e si becca `Permission denied`.
+  `sudo` è passwordless. Da qui si leggono ownership, digest immagine, `docker top`, healthcheck —
+  tutto ciò che i 7 tool dell'MCP non espongono.
+- **Prima di un deploy, verifica da quanto è ferma l'immagine**: `docker inspect timesheet
+  --format '{{.Created}}'`. Senza Watchtower le build verdi su GHCR **non** arrivano da sole sul Pi —
+  a settembre 2026 il container aveva due mesi di ritardo su `main` (vedi [[tech-debt]]).
+- Il backup pre-rilascio vive in `~/timesheet-backups/<timestamp>/` sul Pi: `docker cp timesheet:/data`
+  (DB **e** `.auth-secret` — senza quest'ultimo tutte le sessioni decadono) più i file di config via
+  `sudo`, e il digest dell'immagine per il rollback.
 - Su CasaOS/Pi, un semplice **restart** del container non rilegge `docker-compose.yml` — serve `docker compose up -d` per far applicare modifiche alle env var (vedi [[tech-debt]]). `deploy_app` del MCP `pi-deploy` fallisce per permessi su `/DATA/AppData/timesheet`, quindi le modifiche a compose/env vanno fatte a mano dall'utente.
 - Quando non si è sulla stessa rete wifi del Pi, usare il server MCP `mcp__pi-deploy-remote__*` (IP pubblico + port-forward, porta 8888) invece di `mcp__pi-deploy__*` (default, IP LAN) — vedi [[decisions]]. Config in `~/.claude.json`, fuori dal repo; richiede riavvio sessione dopo modifiche.
