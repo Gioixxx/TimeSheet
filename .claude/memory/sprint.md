@@ -37,6 +37,22 @@ Stato del lavoro in corso. Aggiornato con `/sprint`.
 - [x] Impedisce al service worker di cachare pagine di login
 - [x] Aggiornata la memoria del progetto (fix login Calendario/Oggi)
 - [x] Aggiunta la funzionalità di login per l'istanza esposta su internet
+- [x] Risolti i 20 bug dell'audit statico
+- [x] Spostati gli hook claude-libs fuori da settings.json versionato
+- [x] Non versionato .claude/settings.local.json
+- [x] Audit statico dei bug del progetto
+- [x] Riepilogo export diviso anche per tipo attività (#3)
+- [x] Aggiunto export Excel (.xlsx) con filtri UI e totale generale
+- [x] Debrief sessione — backlog TLS e aggiornamento data memoria
+- [x] Aggiornata memoria progetto (fix login Calendario/Oggi)
+- [x] Aggiornata memoria progetto (fix polling email Docker)
+- [x] Schedulato il polling IMAP in-process nel server standalone
+- [x] Aggiornata sprint e ignorati i backup automatici (*.bak)
+- [x] Release 1.1.0
+- [x] Aggiunto login per l'istanza esposta su internet
+- [x] Aggiornata sprint corrente
+- [x] Registrazione progetto e aggiornamento a 1.27.0
+- [x] Allineato il pannello attività al form di inserimento manuale
 
 ### Bloccati / In attesa
 
