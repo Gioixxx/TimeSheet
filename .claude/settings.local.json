@@ -22,7 +22,14 @@
       "Bash(grep -r \"color\\\\|Color\\\\|COLOR\" /c/Users/Gioix/OneDrive/Desktop/Progetti/timesheet/src/components/*.tsx)",
       "Bash(rtk git *)",
       "mcp__pi-deploy__test_connection",
-      "mcp__pi-deploy__list_apps"
+      "mcp__pi-deploy__list_apps",
+      "mcp__ollama-sidecar__summarize_session",
+      "mcp__pi-deploy-remote__force_update",
+      "mcp__pi-deploy-remote__test_connection",
+      "PowerShell(Test-NetConnection *)",
+      "Bash(timeout 15 ssh -o BatchMode=yes -o StrictHostKeyChecking=accept-new -o ConnectTimeout=10 -p 8888 gioixxx@myservergio.duckdns.org exit)",
+      "Bash(echo \"EXIT_CODE:$?\")",
+      "Bash(timeout 15 ssh -vvv -o BatchMode=yes -o StrictHostKeyChecking=accept-new -o ConnectTimeout=10 -p 8888 gioixxx@myservergio.duckdns.org exit)"
     ]
   }
 }
