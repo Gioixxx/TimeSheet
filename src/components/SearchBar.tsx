@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
+import Link from 'next/link'
 import { Search, X, User, Briefcase, Calendar, Wrench, HeadphonesIcon, Sun, Clock, TrendingUp } from 'lucide-react'
 import styles from './SearchBar.module.css'
 
@@ -133,7 +134,14 @@ export default function SearchBar() {
           )}
 
           {!loading && results.map((entry) => (
-            <div key={entry.id} className={styles.result} role="option" aria-selected={false}>
+            <Link
+              key={entry.id}
+              href={`/calendario/${entry.date.slice(0, 10)}?highlight=${entry.id}#entry-${entry.id}`}
+              className={styles.result}
+              role="option"
+              aria-selected={false}
+              onClick={() => setOpen(false)}
+            >
               <div className={styles.resultTop}>
                 <span className={styles.resultTitle}>{entry.title}</span>
                 <div className={styles.resultRight}>
@@ -177,7 +185,7 @@ export default function SearchBar() {
                   ))}
                 </div>
               )}
-            </div>
+            </Link>
           ))}
         </div>
       )}

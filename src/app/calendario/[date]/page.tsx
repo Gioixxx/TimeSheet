@@ -38,10 +38,14 @@ const MONTH_NAMES_IT = [
 
 export default async function CalendarioGiornoPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ date: string }>
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>
 }) {
   const { date } = await params
+  const { highlight } = await searchParams
+  const highlightId = typeof highlight === 'string' ? highlight : undefined
 
   // Validate YYYY-MM-DD format
   if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) notFound()
@@ -128,7 +132,11 @@ export default async function CalendarioGiornoPage({
           {entries.map((entry) => {
             const { label, Icon } = activityMeta(entry.activityType)
             return (
-              <li key={entry.id} className={styles.entry}>
+              <li
+                key={entry.id}
+                id={`entry-${entry.id}`}
+                className={entry.id === highlightId ? `${styles.entry} ${styles.entryHighlight}` : styles.entry}
+              >
                 <div className={styles.entryTop}>
                   <span className={styles.entryTitle}>{entry.title}</span>
                   <div className={styles.entryRight}>

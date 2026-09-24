@@ -131,6 +131,7 @@
   border-left: 3px solid transparent;
   border-radius: var(--radius);
   padding: 14px 16px;
+  scroll-margin-top: 80px;
   backdrop-filter: var(--glass-blur);
   box-shadow: var(--shadow-glass);
   transition:
@@ -147,6 +148,17 @@
   background: var(--bg-surface-hover);
   transform: translateX(2px);
   box-shadow: var(--shadow-lift);
+}
+
+.entryHighlight {
+  border-left-color: var(--primary);
+  background: var(--bg-surface-hover);
+  animation: entryHighlightPulse 1.6s ease-out 1;
+}
+
+@keyframes entryHighlightPulse {
+  0% { box-shadow: 0 0 0 0 var(--primary); }
+  100% { box-shadow: 0 0 0 8px transparent; }
 }
 
 .entryTop {

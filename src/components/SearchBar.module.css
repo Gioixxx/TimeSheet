@@ -95,10 +95,13 @@
 }
 
 .result {
+  display: block;
   padding: 10px 12px;
   border-radius: calc(var(--radius-sm) - 2px);
   border-left: 2px solid transparent;
-  cursor: default;
+  color: inherit;
+  text-decoration: none;
+  cursor: pointer;
   transition: background 0.15s, border-left-color 0.15s;
 }
 
@@ -106,7 +109,8 @@
   border-bottom: 1px solid var(--border);
 }
 
-.result:hover {
+.result:hover,
+.result:focus-visible {
   background: rgba(99, 102, 241, 0.08);
   border-left-color: var(--primary);
 }
