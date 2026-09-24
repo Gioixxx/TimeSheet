@@ -8,7 +8,7 @@
 **Stack:** nextjs
 **Repo:** F:/Root Progetti/PROJECTS/TimeSheet
 **Team:** [chi lavora al progetto]
-**Ultimo aggiornamento:** 2026-09-15
+**Ultimo aggiornamento:** 2026-09-24
 
 ## Contesto rapido
 
@@ -32,7 +32,7 @@ TimeSheet è un'applicazione per la gestione delle schede attività, focalizzata
 
 - Le user stories US-001 e US-002 sono le priorità immediate per l'implementazione della registrazione del tempo.
 - L'app gira sia come Electron desktop locale (mai esposto) sia come Docker su CasaOS/Pi dell'utente (esposto su internet). Il login (vedi [[decisions]]) è gated dal flag `AUTH_ENABLED`: assente/false per Electron e dev locale, `"true"` solo in `docker-compose.yml`. Non dare per scontato che l'auth sia sempre attiva quando si modifica codice in quest'area.
-- L'istanza Docker/CasaOS è raggiunta su `http://myservergio.duckdns.org:3000` **senza TLS** (nessun reverse proxy davanti). Per questo `docker-compose.yml` imposta `COOKIE_SECURE: "false"` (vedi [[decisions]]) — altrimenti il browser scarta il cookie di sessione e ogni navigazione fresca torna al login. Non "correggere" rimuovendo questa var senza prima aggiungere TLS davanti all'app.
+- L'istanza Docker/CasaOS è su **`https://myservergio.duckdns.org:3000`**: Caddy (`timesheet-caddy`) tiene la porta 3000 con certificato Let's Encrypt via DNS-01 DuckDNS (`DUCKDNS_TOKEN` nel `.env` del Pi) e inoltra a `timesheet:3000`, non più pubblicato sull'host. `COOKIE_SECURE` non è più impostato (cookie `Secure`). HTTPS serve anche al microfono del form. Il compose del Pi va **modificato, non sostituito** con quello del repo (default `IAPI_BASE_URL` diverso) — vedi [[decisions]].
 - **SSH diretto al Pi funziona** e spesso è più veloce dell'MCP `pi-deploy` per diagnosticare:
   `ssh -i ~/.ssh/id_ed25519_pi5_casaos gioixxx@192.168.1.50` (alias `pi5-casaos` in `~/.ssh/config`).
   La chiave va passata **esplicita**: l'agent di default non ce l'ha e si becca `Permission denied`.
