@@ -1,0 +1,19 @@
+{
+	# La porta 80 del Pi è di CasaOS: niente listener HTTP separato per i redirect.
+	auto_https disable_redirects
+	servers {
+		# Una richiesta http:// sulla porta 3000 viene rediretta su https:// della stessa porta.
+		listener_wrappers {
+			http_redirect
+			tls
+		}
+	}
+}
+
+# L'URL resta quello di prima con https: il router inoltra già la porta 3000 al Pi.
+myservergio.duckdns.org:3000 {
+	tls {
+		dns duckdns {env.DUCKDNS_TOKEN}
+	}
+	reverse_proxy timesheet:3000
+}

@@ -4,8 +4,9 @@ services:
     container_name: timesheet
     labels:
       - com.centurylinklabs.watchtower.scope=timesheet
-    ports:
-      - "3000:3000"
+    # Non pubblicata sull'host: la raggiunge solo Caddy, che fa da HTTPS sulla porta 3000.
+    expose:
+      - "3000"
     environment:
       DATABASE_URL: file:///data/timesheet.db
       # Il giorno corrente e le finestre settimanali sono calcolati nel fuso del processo:
@@ -13,9 +14,6 @@ services:
       # browser sono su due giorni diversi.
       TZ: ${TZ:-Europe/Rome}
       AUTH_ENABLED: "true"
-      # Istanza esposta via DuckDNS senza reverse proxy TLS davanti: un cookie Secure
-      # su HTTP semplice verrebbe scartato dal browser e la sessione non persisterebbe.
-      COOKIE_SECURE: "false"
       AUTH_SECRET: ${AUTH_SECRET:-}
       IAPI_BASE_URL: ${IAPI_BASE_URL:-}
       IAPI_API_KEY: ${IAPI_API_KEY:-}
@@ -36,5 +34,26 @@ services:
       retries: 3
       start_period: 30s
 
+  # HTTPS davanti all'app: senza un secure context il browser nega il microfono e il cookie
+  # di sessione Secure verrebbe scartato. Certificato Let's Encrypt via DNS-01 di DuckDNS.
+  caddy:
+    build: ./deploy/caddy
+    image: timesheet-caddy
+    container_name: timesheet-caddy
+    ports:
+      - "3000:3000"
+    environment:
+      DUCKDNS_TOKEN: ${DUCKDNS_TOKEN:?imposta DUCKDNS_TOKEN nel .env}
+    volumes:
+      - caddy-data:/data
+      - caddy-config:/config
+    depends_on:
+      - timesheet
+    restart: unless-stopped
+
 volumes:
   timesheet-data:
+  # Certificati e account ACME: persistono tra le ricreazioni, così non si richiede
+  # un certificato nuovo a ogni deploy (Let's Encrypt ha limiti di frequenza).
+  caddy-data:
+  caddy-config:
