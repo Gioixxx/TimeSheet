@@ -17,5 +17,8 @@ export const ACTIVITY_TYPE_LABELS: Record<ActivityType, string> = {
   STRAORDINARIO: 'Straordinario',
 }
 
+/** Tipi che non sono lavoro svolto per un cliente: nei riepiloghi vanno tenuti separati. */
+export const ABSENCE_TYPES: readonly ActivityType[] = ['PERMESSO', 'FERIE']
+
 /** Minuti in una giornata lavorativa: unità con cui si contano le FERIE e gli straordinari. */
 export const MINUTES_PER_WORKDAY = 480

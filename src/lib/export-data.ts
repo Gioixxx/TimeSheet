@@ -3,9 +3,11 @@ import { prisma } from '@/lib/prisma'
 
 export type ExportRow = {
   date: string // dd/mm/yyyy
+  isoDate: string // yyyy-mm-dd
   title: string
   description: string
   activityType: string // label italiana lowercase
+  activityTypeKey: ActivityType
   hours: number
   overtimeHours: number | null // valorizzato solo sulla prima entry del giorno
   client: string
@@ -17,11 +19,14 @@ export type ExportSummaryRow = {
   client: string
   project: string
   activityType: string // label italiana lowercase
+  activityTypeKey: ActivityType
   totalHours: number
   overtimeHours: number
 }
 
 export type ExportDataset = {
+  period: { year: number; month: number }
+  filters: { type: ActivityType | null; client: string | null }
   rows: ExportRow[]
   summary: ExportSummaryRow[]
   grandTotal: { totalHours: number; overtimeHours: number }
@@ -56,6 +61,12 @@ function formatDateUtc(d: Date): string {
 
 export function roundHours(hours: number): number {
   return Math.round(hours * 100) / 100
+}
+
+/** Ordine alfabetico italiano, con i nomi vuoti (voci senza cliente/progetto) in fondo. */
+function compareNames(a: string, b: string): number {
+  if (a === '' || b === '') return Number(a === '') - Number(b === '')
+  return a.localeCompare(b, 'it')
 }
 
 /**
@@ -97,9 +108,9 @@ export async function buildExportDataset(filters: ExportFilters): Promise<Export
 
   // Ordinamento riepilogativo: cliente → progetto → data → titolo (locale italiano).
   const sortedEntries = [...filtered].sort((a, b) => {
-    const clientCmp = (a.client?.name ?? '').localeCompare(b.client?.name ?? '', 'it')
+    const clientCmp = compareNames(a.client?.name ?? '', b.client?.name ?? '')
     if (clientCmp !== 0) return clientCmp
-    const projectCmp = (a.project?.name ?? '').localeCompare(b.project?.name ?? '', 'it')
+    const projectCmp = compareNames(a.project?.name ?? '', b.project?.name ?? '')
     if (projectCmp !== 0) return projectCmp
     const dateCmp = a.date.getTime() - b.date.getTime()
     if (dateCmp !== 0) return dateCmp
@@ -120,9 +131,11 @@ export async function buildExportDataset(filters: ExportFilters): Promise<Export
 
     rows.push({
       date: formatDateUtc(e.date),
+      isoDate: dateKey,
       title: e.title,
       description: e.description ?? '',
       activityType,
+      activityTypeKey: e.activityType,
       hours: roundHours(e.duration / 60),
       overtimeHours: isFirst ? overtimeHours : null,
       client: e.client?.name ?? '',
@@ -137,6 +150,7 @@ export async function buildExportDataset(filters: ExportFilters): Promise<Export
       client: clientName,
       project: projectName,
       activityType,
+      activityTypeKey: e.activityType,
       totalHours: 0,
       overtimeHours: 0,
     }
@@ -153,18 +167,21 @@ export async function buildExportDataset(filters: ExportFilters): Promise<Export
       client: item.client,
       project: item.project,
       activityType: item.activityType,
+      activityTypeKey: item.activityTypeKey,
       totalHours: roundHours(item.totalHours),
       overtimeHours: roundHours(item.overtimeHours),
     }))
     .sort((a, b) => {
-      const clientCmp = a.client.localeCompare(b.client, 'it')
+      const clientCmp = compareNames(a.client, b.client)
       if (clientCmp !== 0) return clientCmp
-      const projectCmp = a.project.localeCompare(b.project, 'it')
+      const projectCmp = compareNames(a.project, b.project)
       if (projectCmp !== 0) return projectCmp
       return a.activityType.localeCompare(b.activityType, 'it')
     })
 
   return {
+    period: { year: filters.year, month: filters.month },
+    filters: { type: filters.type ?? null, client: filters.client ?? null },
     rows,
     summary,
     grandTotal: {
