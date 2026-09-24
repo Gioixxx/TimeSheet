@@ -160,29 +160,51 @@ export default async function CalendarioPage({
     }
   }
 
+  const holidays = italianHolidays(year)
+
+  // dayMap include le ferie (colore della cella e straordinari: le ferie coprono le 8h del giorno);
+  // workedDayMap no, perché le ferie non sono ore lavorate ma riducono le ore attese.
   const dayMap = new Map<string, number>()
-  let totalMinutes = 0
+  const workedDayMap = new Map<string, number>()
+  const ferieDayMap = new Map<string, number>()
   let busiestDay = { key: '', minutes: 0 }
 
   for (const e of entries) {
     const key = e.date.toISOString().slice(0, 10)
-    const prev = dayMap.get(key) ?? 0
-    const next = prev + e.duration
+    const next = (dayMap.get(key) ?? 0) + e.duration
     dayMap.set(key, next)
-    totalMinutes += e.duration
-    if (next > busiestDay.minutes) busiestDay = { key, minutes: next }
+    if (e.activityType === 'FERIE') {
+      ferieDayMap.set(key, (ferieDayMap.get(key) ?? 0) + e.duration)
+    } else {
+      const worked = (workedDayMap.get(key) ?? 0) + e.duration
+      workedDayMap.set(key, worked)
+      if (worked > busiestDay.minutes) busiestDay = { key, minutes: worked }
+    }
   }
+
+  let totalMinutes = 0
+  for (const min of workedDayMap.values()) totalMinutes += min
+
+  // Solo le ferie su un giorno lavorativo scalano le ore attese, al massimo 8h per giorno.
+  let ferieMinutes = 0
+  for (const [key, min] of ferieDayMap) {
+    const dow = new Date(`${key}T00:00:00Z`).getUTCDay()
+    if (dow === 0 || dow === 6 || holidays.has(key)) continue
+    ferieMinutes += Math.min(min, 480)
+  }
+  const ferieDays = ferieMinutes / 480
 
   let totalOvertimeMinutes = 0
   for (const dayMin of dayMap.values()) {
     if (dayMin > 480) totalOvertimeMinutes += dayMin - 480
   }
 
-  const holidays = italianHolidays(year)
   const weeks = buildCalendarWeeks(year, month, dayMap, holidays)
-  const activeDays = dayMap.size
+  const activeDays = workedDayMap.size
   const workingDays = countWorkingDays(year, month)
-  const expectedMinutes = workingDays * 8 * 60
+  const expectedMinutes = Math.max(0, workingDays * 8 * 60 - ferieMinutes)
+  const effectiveWorkingDays = workingDays - ferieDays
+  const formatDays = (d: number) => (Number.isInteger(d) ? `${d}` : d.toFixed(1))
   const todayKey = `${now.getUTCFullYear()}-${String(now.getUTCMonth() + 1).padStart(2, '0')}-${String(now.getUTCDate()).padStart(2, '0')}`
 
   // Prev / next month links
@@ -226,7 +248,9 @@ export default async function CalendarioPage({
           <p className={styles.statValue}>
             {(expectedMinutes / 60).toFixed(0)}
             <span className={styles.statUnit}>h</span>
-            <span className={styles.statSub}>{workingDays}gg lav.</span>
+            <span className={styles.statSub}>
+              {workingDays}gg lav.{ferieDays > 0 && ` − ${formatDays(ferieDays)}gg ferie`}
+            </span>
           </p>
         </div>
         <div className={styles.statCard}>
@@ -238,7 +262,7 @@ export default async function CalendarioPage({
         </div>
         <div className={styles.statCard}>
           <p className={styles.statLabel}>Giorni attivi</p>
-          <p className={styles.statValue}>{activeDays}<span className={styles.statSub}>/ {workingDays}</span></p>
+          <p className={styles.statValue}>{activeDays}<span className={styles.statSub}>/ {formatDays(effectiveWorkingDays)}</span></p>
         </div>
         <div className={styles.statCard}>
           <p className={styles.statLabel}>Media / giorno attivo</p>
