@@ -39,6 +39,9 @@ services:
   caddy:
     build: ./deploy/caddy
     image: timesheet-caddy
+    # Immagine costruita sul Pi, non su un registry: `docker compose pull` (e quindi
+    # force_update) deve saltarla invece di fallire.
+    pull_policy: build
     container_name: timesheet-caddy
     ports:
       - "3000:3000"
