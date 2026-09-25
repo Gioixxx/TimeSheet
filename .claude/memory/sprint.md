@@ -19,6 +19,15 @@ Stato del lavoro in corso. Aggiornato con `/sprint`.
 
 ### Completati
 
+- [x] **Ore oltre le 8h (v1.4.0, 2026-09-25)** — al salvataggio di una voce di lavoro che supera
+      le 8h ordinarie si sceglie tra straordinario (voce divisa) e spostamento sui giorni
+      lavorativi successivi, a cascata. Form manuale, "Compila e salva", post-it e modifica.
+      Verificato su una copia del DB con tutti e quattro i percorsi; regole in [[decisions]].
+      Non provato dal vivo il percorso "Compila e salva": richiede iAPi raggiungibile
+- [x] **HTTPS con Caddy sul Pi (2026-09-24)** — `https://myservergio.duckdns.org:3000`, certificato
+      Let's Encrypt via DNS-01 DuckDNS, cookie di sessione di nuovo `Secure`; vedi [[decisions]]
+- [x] **Rilascio v1.3.1 (2026-09-24)** — export Excel a doppia entrata con assenze separate,
+      ricerca che apre il giorno della voce, ferie scalate dalle ore attese del calendario
 - [x] **Rilascio v1.3.0 sul Pi (2026-09-15)** — merge del branch `claude/project-analysis-bug-check-br8h08`
       su `main`, tag `v1.3.0`, build ARM64 verde, `force_update`. Verificato: container ricreato
       (nuovo `ENTRYPOINT`), `No pending migrations to apply`, healthcheck `healthy`, processo non

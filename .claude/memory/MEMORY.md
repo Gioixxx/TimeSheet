@@ -8,13 +8,13 @@
 **Stack:** nextjs
 **Repo:** F:/Root Progetti/PROJECTS/TimeSheet
 **Team:** [chi lavora al progetto]
-**Ultimo aggiornamento:** 2026-09-24
+**Ultimo aggiornamento:** 2026-09-25
 
 ## Contesto rapido
 
 > 2-3 righe su cos'è il progetto e qual è l'obiettivo attuale. Aggiorna questa sezione ogni sprint.
 
-TimeSheet è un'applicazione per la gestione delle schede attività, focalizzata sulla registrazione del tempo lavorato per specifici progetti e attività. L'obiettivo attuale è implementare le funzionalità di base per la registrazione del tempo in linea con le user stories del backlog (US-001, US-002).
+TimeSheet è un'applicazione per la gestione delle schede attività: registrazione del tempo per cliente/progetto, calendario con ore attese, export CSV/Excel, reminder, post-it da email. Le funzioni di base (US-001, US-002) sono chiuse da luglio; dalla v1.4.0 le ore oltre le 8h si registrano come straordinario o si spostano sui giorni lavorativi successivi. Sprint attuale: hardening del deploy su CasaOS (Watchtower, permessi di `deploy_app`).
 
 ## Indice memoria
 
@@ -30,7 +30,7 @@ TimeSheet è un'applicazione per la gestione delle schede attività, focalizzata
 
 > Cose da tenere sempre a mente durante il lavoro. Aggiorna con `/remember`.
 
-- Le user stories US-001 e US-002 sono le priorità immediate per l'implementazione della registrazione del tempo.
+- Le server action che salvano voci (`createTimeEntry`, `updateTimeEntry`, `logTaskAsEntry`) restituiscono `SaveEntryResult`: con `{ ok: false, overflow }` **non hanno scritto nulla** e aspettano la scelta straordinario/spostamento. Un nuovo punto di inserimento deve gestirlo (pannello `OverflowPrompt`), altrimenti la voce si perde in silenzio. Regole in [[decisions]].
 - L'app gira sia come Electron desktop locale (mai esposto) sia come Docker su CasaOS/Pi dell'utente (esposto su internet). Il login (vedi [[decisions]]) è gated dal flag `AUTH_ENABLED`: assente/false per Electron e dev locale, `"true"` solo in `docker-compose.yml`. Non dare per scontato che l'auth sia sempre attiva quando si modifica codice in quest'area.
 - L'istanza Docker/CasaOS è su **`https://myservergio.duckdns.org:3000`**: Caddy (`timesheet-caddy`) tiene la porta 3000 con certificato Let's Encrypt via DNS-01 DuckDNS (`DUCKDNS_TOKEN` nel `.env` del Pi) e inoltra a `timesheet:3000`, non più pubblicato sull'host. `COOKIE_SECURE` non è più impostato (cookie `Secure`). HTTPS serve anche al microfono del form. Il compose del Pi va **modificato, non sostituito** con quello del repo (default `IAPI_BASE_URL` diverso) — vedi [[decisions]].
 - **SSH diretto al Pi funziona** e spesso è più veloce dell'MCP `pi-deploy` per diagnosticare:
