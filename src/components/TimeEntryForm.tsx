@@ -7,6 +7,8 @@ import { Plus, Mic, MicOff, Clock, Sparkles } from 'lucide-react'
 import { timeEntrySchema, type TimeEntryInput } from '@/lib/schemas'
 import { todayLocalIso } from '@/lib/dates'
 import { createTimeEntry, parseNaturalLanguageTimeEntry } from '@/app/actions'
+import type { OverflowChoice, OverflowInfo } from '@/lib/day-overflow'
+import OverflowPrompt, { overflowKey } from './OverflowPrompt'
 import styles from './TimeEntryForm.module.css'
 
 const QUICK_PICK_LIMIT = 8
@@ -68,6 +70,8 @@ export default function TimeEntryForm({ clients, projects, tags, defaultDate }: 
   const [ore, setOre] = useState(1)
   const [minuti, setMinuti] = useState(0)
   const [giorni, setGiorni] = useState(1)
+  // Eccedenza oltre le 8h in attesa di scelta; `fromNl` se la voce arriva da "Compila e salva"
+  const [overflow, setOverflow] = useState<{ info: OverflowInfo; key: string; fromNl: boolean } | null>(null)
 
   const today = todayLocalIso()
 
@@ -86,6 +90,10 @@ export default function TimeEntryForm({ clients, projects, tags, defaultDate }: 
 
   const activityType = watch('activityType')
   const isFerie = activityType === 'FERIE'
+
+  // La domanda vale solo per i valori con cui è stata calcolata: cambiarli la fa sparire
+  const currentKey = overflowKey({ date: watch('date'), duration: watch('duration'), activityType })
+  const pendingOverflow = overflow?.key === currentKey ? overflow : null
 
   useEffect(() => {
     const computed = isFerie ? Math.max(1, Math.round(giorni * 480)) : Math.max(1, ore * 60 + minuti)
@@ -137,14 +145,25 @@ export default function TimeEntryForm({ clients, projects, tags, defaultDate }: 
     [getValues, setValue]
   )
 
-  const onSubmit = (data: TimeEntryInput) => {
+  const save = (data: TimeEntryInput, choice?: OverflowChoice) => {
     startTransition(async () => {
-      await createTimeEntry(data)
+      const result = await createTimeEntry(data, choice)
+      if (!result.ok) {
+        setOverflow({ info: result.overflow, key: overflowKey(data), fromNl: false })
+        return
+      }
+      if (overflow?.fromNl) setNlText('')
+      setOverflow(null)
       const currentDate = todayLocalIso()
       reset({ title: '', description: '', activityType: 'SUPPORTO', duration: 60, date: currentDate, clientName: '', projectName: '', tags: '' })
       setOre(1); setMinuti(0); setGiorni(1)
     })
   }
+
+  const onSubmit = (data: TimeEntryInput) => save(data)
+
+  // La scelta risottomette i valori correnti del form: il server ricalcola comunque l'eccedenza
+  const chooseOverflow = (choice: OverflowChoice) => handleSubmit((data) => save(data, choice))()
 
   const applyParsedToForm = (data: TimeEntryInput) => {
     setValue('title', data.title, { shouldValidate: true })
@@ -183,7 +202,13 @@ export default function TimeEntryForm({ clients, projects, tags, defaultDate }: 
         setNlError(result.message)
         return
       }
-      await createTimeEntry(result.data)
+      const saved = await createTimeEntry(result.data)
+      if (!saved.ok) {
+        // La voce interpretata passa nel form, dove l'utente sceglie cosa fare dell'eccedenza
+        applyParsedToForm(result.data)
+        setOverflow({ info: saved.overflow, key: overflowKey(result.data), fromNl: true })
+        return
+      }
       setNlText('')
       reset({ date: today, duration: 60, activityType: 'SUPPORTO' })
     })
@@ -524,7 +549,16 @@ export default function TimeEntryForm({ clients, projects, tags, defaultDate }: 
           </details>
         )}
 
-        <button type="submit" disabled={isPending} className={styles.submitButton}>
+        {pendingOverflow && (
+          <OverflowPrompt
+            info={pendingOverflow.info}
+            pending={isPending}
+            onChoose={chooseOverflow}
+            onCancel={() => setOverflow(null)}
+          />
+        )}
+
+        <button type="submit" disabled={isPending || !!pendingOverflow} className={styles.submitButton}>
           <Plus size={16} />
           {isPending ? 'Salvataggio...' : 'Aggiungi voce'}
         </button>

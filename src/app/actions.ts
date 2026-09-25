@@ -2,8 +2,19 @@
 
 import { revalidatePath } from 'next/cache'
 import { prisma } from '@/lib/prisma'
-import { timeEntrySchema } from '@/lib/schemas'
+import { overflowChoiceSchema, timeEntrySchema, type TimeEntryInput } from '@/lib/schemas'
 import { todayLocalIso } from '@/lib/dates'
+import { dateKeyUtc } from '@/lib/holidays'
+import {
+  excessMinutes,
+  isOverflowChecked,
+  planSpread,
+  splitEntry,
+  type EntryPart,
+  type OverflowChoice,
+  type OverflowInfo,
+} from '@/lib/day-overflow'
+import type { ActivityType } from '@/lib/activity-types'
 import { nextOccurrence, parseRecurrenceRule } from '@/lib/reminder-recurrence'
 import { verifySession } from '@/lib/dal'
 import {
@@ -49,51 +60,150 @@ async function resolveRelations(data: ReturnType<typeof timeEntrySchema.parse>) 
   return { clientId, projectId, tagRecords }
 }
 
-export async function createTimeEntry(raw: unknown) {
-  await verifySession()
-  const data = timeEntrySchema.parse(raw)
-  const { clientId, projectId, tagRecords } = await resolveRelations(data)
+// ── Ore oltre le 8h ──────────────────────────────────────────────────────────
 
-  await prisma.timeEntry.create({
-    data: {
-      title: data.title,
-      description: data.description,
-      activityType: data.activityType,
-      duration: data.duration,
-      date: new Date(data.date),
-      clientId: clientId ?? null,
-      projectId: projectId ?? null,
-      tags: { connect: tagRecords.map((t) => ({ id: t.id })) },
+/**
+ * Esito del salvataggio di una voce. Se la voce porta il giorno oltre le 8h ordinarie e
+ * l'utente non ha ancora scelto cosa farne, non viene scritto nulla e si restituisce ciò che
+ * serve per chiederglielo; il client richiama la stessa action con la scelta.
+ */
+export type SaveEntryResult = { ok: true } | { ok: false; overflow: OverflowInfo }
+
+type ExistingEntry = { id: string; date: Date; duration: number; activityType: ActivityType }
+
+/** Ore ordinarie (tutto tranne STRAORDINARIO) per giorno, da `fromKey` in poi. */
+async function regularMinutesByDay(fromKey: string, excludeId?: string) {
+  const rows = await prisma.timeEntry.groupBy({
+    by: ['date'],
+    where: {
+      date: { gte: new Date(fromKey) },
+      activityType: { not: 'STRAORDINARIO' },
+      ...(excludeId ? { id: { not: excludeId } } : {}),
     },
+    _sum: { duration: true },
   })
+  const byDay = new Map<string, number>()
+  for (const row of rows) {
+    const key = dateKeyUtc(row.date)
+    byDay.set(key, (byDay.get(key) ?? 0) + (row._sum.duration ?? 0))
+  }
+  return byDay
+}
 
+/** Decide le voci da scrivere, oppure che prima serve la scelta dell'utente. */
+async function planEntry(
+  data: TimeEntryInput,
+  choice: unknown,
+  existing?: ExistingEntry,
+): Promise<{ parts: EntryPart[] } | { ask: OverflowInfo }> {
+  const date = dateKeyUtc(new Date(data.date))
+  const entry: EntryPart = { date, duration: data.duration, activityType: data.activityType }
+  if (!isOverflowChecked(entry.activityType)) return { parts: [entry] }
+
+  const byDay = await regularMinutesByDay(date, existing?.id)
+  const regular = byDay.get(date) ?? 0
+  const excess = excessMinutes(regular, entry.duration)
+
+  // In modifica si chiede solo se la modifica aumenta l'eccedenza: correggere il titolo di una
+  // voce in un giorno già oltre le 8h non deve riaprire la domanda.
+  const excessBefore =
+    existing && dateKeyUtc(existing.date) === date && isOverflowChecked(existing.activityType)
+      ? excessMinutes(regular, existing.duration)
+      : 0
+  if (excess <= excessBefore) return { parts: [entry] }
+
+  const chosen = overflowChoiceSchema.parse(choice)
+  if (!chosen) {
+    return {
+      ask: {
+        date,
+        regularMinutes: regular,
+        entryMinutes: entry.duration,
+        excessMinutes: excess,
+        spread: planSpread(excess, date, byDay),
+      },
+    }
+  }
+  return { parts: splitEntry(entry, regular, chosen, byDay) }
+}
+
+function entryFields(
+  data: TimeEntryInput,
+  part: EntryPart,
+  relations: { clientId?: string; projectId?: string },
+) {
+  return {
+    title: data.title,
+    description: data.description,
+    activityType: part.activityType,
+    duration: part.duration,
+    date: new Date(part.date),
+    clientId: relations.clientId ?? null,
+    projectId: relations.projectId ?? null,
+  }
+}
+
+function revalidateEntries() {
   revalidatePath('/')
   revalidatePath('/oggi')
   revalidatePath('/calendario', 'layout')
 }
 
-export async function updateTimeEntry(id: string, raw: unknown) {
+// ── TimeEntry actions ────────────────────────────────────────────────────────
+
+export async function createTimeEntry(
+  raw: unknown,
+  choice?: OverflowChoice,
+): Promise<SaveEntryResult> {
   await verifySession()
   const data = timeEntrySchema.parse(raw)
-  const { clientId, projectId, tagRecords } = await resolveRelations(data)
+  const plan = await planEntry(data, choice)
+  if ('ask' in plan) return { ok: false, overflow: plan.ask }
 
-  await prisma.timeEntry.update({
+  const { tagRecords, ...relations } = await resolveRelations(data)
+  const connect = tagRecords.map((t) => ({ id: t.id }))
+  await prisma.$transaction(
+    plan.parts.map((part) =>
+      prisma.timeEntry.create({ data: { ...entryFields(data, part, relations), tags: { connect } } })
+    )
+  )
+
+  revalidateEntries()
+  return { ok: true }
+}
+
+export async function updateTimeEntry(
+  id: string,
+  raw: unknown,
+  choice?: OverflowChoice,
+): Promise<SaveEntryResult> {
+  await verifySession()
+  const data = timeEntrySchema.parse(raw)
+  const existing = await prisma.timeEntry.findUniqueOrThrow({
     where: { id },
-    data: {
-      title: data.title,
-      description: data.description,
-      activityType: data.activityType,
-      duration: data.duration,
-      date: new Date(data.date),
-      clientId: clientId ?? null,
-      projectId: projectId ?? null,
-      tags: { set: tagRecords.map((t) => ({ id: t.id })) },
-    },
+    select: { id: true, date: true, duration: true, activityType: true },
   })
+  const plan = await planEntry(data, choice, existing)
+  if ('ask' in plan) return { ok: false, overflow: plan.ask }
 
-  revalidatePath('/')
-  revalidatePath('/oggi')
-  revalidatePath('/calendario', 'layout')
+  // La prima parte aggiorna la voce esistente, le altre sono voci nuove
+  const [first, ...rest] = plan.parts
+  const { tagRecords, ...relations } = await resolveRelations(data)
+  const tagIds = tagRecords.map((t) => ({ id: t.id }))
+  await prisma.$transaction([
+    prisma.timeEntry.update({
+      where: { id },
+      data: { ...entryFields(data, first, relations), tags: { set: tagIds } },
+    }),
+    ...rest.map((part) =>
+      prisma.timeEntry.create({
+        data: { ...entryFields(data, part, relations), tags: { connect: tagIds } },
+      })
+    ),
+  ])
+
+  revalidateEntries()
+  return { ok: true }
 }
 
 export async function deleteTimeEntry(id: string) {
@@ -161,30 +271,30 @@ export async function updateTask(id: string, raw: unknown) {
  * quelli confermati dall'utente al momento della registrazione. Prima erano vincolati a
  * SUPPORTO/MANUTENZIONE e i tag non erano proprio rappresentabili.
  */
-export async function logTaskAsEntry(taskId: string, raw: unknown) {
+export async function logTaskAsEntry(
+  taskId: string,
+  raw: unknown,
+  choice?: OverflowChoice,
+): Promise<SaveEntryResult> {
   await verifySession()
   const entryData = timeEntrySchema.parse(raw)
   // Verifica che il task esista prima della transazione, per un errore comprensibile
   await prisma.task.findUniqueOrThrow({ where: { id: taskId } })
-  const { clientId, projectId, tagRecords } = await resolveRelations(entryData)
+  const plan = await planEntry(entryData, choice)
+  if ('ask' in plan) return { ok: false, overflow: plan.ask }
+
+  const { tagRecords, ...relations } = await resolveRelations(entryData)
+  const connect = tagRecords.map((t) => ({ id: t.id }))
   await prisma.$transaction([
-    prisma.timeEntry.create({
-      data: {
-        title: entryData.title,
-        description: entryData.description,
-        activityType: entryData.activityType,
-        duration: entryData.duration,
-        date: new Date(entryData.date),
-        clientId: clientId ?? null,
-        projectId: projectId ?? null,
-        tags: { connect: tagRecords.map((t) => ({ id: t.id })) },
-      },
-    }),
+    ...plan.parts.map((part) =>
+      prisma.timeEntry.create({
+        data: { ...entryFields(entryData, part, relations), tags: { connect } },
+      })
+    ),
     prisma.task.delete({ where: { id: taskId } }),
   ])
-  revalidatePath('/')
-  revalidatePath('/oggi')
-  revalidatePath('/calendario', 'layout')
+  revalidateEntries()
+  return { ok: true }
 }
 
 // ── Reminder actions ─────────────────────────────────────────────────────────

@@ -6,6 +6,8 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { Pencil, X } from 'lucide-react'
 import { timeEntrySchema, type TimeEntryInput } from '@/lib/schemas'
 import { updateTimeEntry } from '@/app/actions'
+import type { OverflowChoice, OverflowInfo } from '@/lib/day-overflow'
+import OverflowPrompt, { overflowKey } from './OverflowPrompt'
 import styles from './EditButton.module.css'
 import listStyles from './TimeEntryList.module.css'
 
@@ -28,6 +30,7 @@ export default function EditButton({ entry }: { entry: EntrySnapshot }) {
   const [ore, setOre] = useState(Math.floor(entry.duration / 60))
   const [minuti, setMinuti] = useState(entry.duration % 60)
   const [giorni, setGiorni] = useState(Math.round(entry.duration / 480 * 10) / 10)
+  const [overflow, setOverflow] = useState<{ info: OverflowInfo; key: string } | null>(null)
 
   const defaultValues: TimeEntryInput = {
     title: entry.title,
@@ -45,6 +48,7 @@ export default function EditButton({ entry }: { entry: EntrySnapshot }) {
     handleSubmit,
     setValue,
     watch,
+    reset,
     formState: { errors },
   } = useForm<TimeEntryInput>({
     resolver: zodResolver(timeEntrySchema),
@@ -54,20 +58,40 @@ export default function EditButton({ entry }: { entry: EntrySnapshot }) {
   const activityType = watch('activityType')
   const isFerie = activityType === 'FERIE'
 
+  const currentKey = overflowKey({ date: watch('date'), duration: watch('duration'), activityType })
+  const pendingOverflow = overflow?.key === currentKey ? overflow : null
+
   useEffect(() => {
     const computed = isFerie ? Math.max(1, Math.round(giorni * 480)) : Math.max(1, ore * 60 + minuti)
     setValue('duration', computed)
   }, [ore, minuti, giorni, isFerie, setValue])
 
-  const open = () => dialogRef.current?.showModal()
+  // Riparte dalla voce salvata: dopo una divisione (straordinario o spostamento) la durata
+  // salvata è diversa da quella digitata, e riaprire il dialog non deve riproporre la vecchia.
+  const open = () => {
+    reset(defaultValues)
+    setOre(Math.floor(entry.duration / 60))
+    setMinuti(entry.duration % 60)
+    setGiorni(Math.round(entry.duration / 480 * 10) / 10)
+    setOverflow(null)
+    dialogRef.current?.showModal()
+  }
   const close = () => dialogRef.current?.close()
 
-  const onSubmit = (data: TimeEntryInput) => {
+  const save = (data: TimeEntryInput, choice?: OverflowChoice) => {
     startTransition(async () => {
-      await updateTimeEntry(entry.id, data)
+      const result = await updateTimeEntry(entry.id, data, choice)
+      if (!result.ok) {
+        setOverflow({ info: result.overflow, key: overflowKey(data) })
+        return
+      }
+      setOverflow(null)
       close()
     })
   }
+
+  const onSubmit = (data: TimeEntryInput) => save(data)
+  const chooseOverflow = (choice: OverflowChoice) => handleSubmit((data) => save(data, choice))()
 
   return (
     <>
@@ -185,11 +209,20 @@ export default function EditButton({ entry }: { entry: EntrySnapshot }) {
             <input {...register('tags')} className={styles.input} placeholder="bug-fix, meeting…" />
           </div>
 
+          {pendingOverflow && (
+            <OverflowPrompt
+              info={pendingOverflow.info}
+              pending={isPending}
+              onChoose={chooseOverflow}
+              onCancel={() => setOverflow(null)}
+            />
+          )}
+
           <div className={styles.actions}>
             <button type="button" className={styles.cancelBtn} onClick={close} disabled={isPending}>
               Annulla
             </button>
-            <button type="submit" className={styles.saveBtn} disabled={isPending}>
+            <button type="submit" className={styles.saveBtn} disabled={isPending || !!pendingOverflow}>
               {isPending ? 'Salvataggio…' : 'Salva modifiche'}
             </button>
           </div>

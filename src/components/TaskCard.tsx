@@ -10,6 +10,8 @@ import {
   type ActivityType,
 } from '@/lib/activity-types'
 import { deleteTask, logTaskAsEntry, updateTask } from '@/app/actions'
+import type { OverflowChoice, OverflowInfo } from '@/lib/day-overflow'
+import OverflowPrompt, { overflowKey } from './OverflowPrompt'
 import styles from './TaskBoard.module.css'
 
 const QUICK_PICK_LIMIT = 8
@@ -32,6 +34,7 @@ type Props = {
 
 export default function TaskCard({ task, clients, projects, tags }: Props) {
   const dialogRef = useRef<HTMLDialogElement>(null)
+  const logFormRef = useRef<HTMLFormElement>(null)
   const editDialogRef = useRef<HTMLDialogElement>(null)
   const [isPending, startTransition] = useTransition()
   const [isDeleting, startDeleteTransition] = useTransition()
@@ -53,10 +56,17 @@ export default function TaskCard({ task, clients, projects, tags }: Props) {
   const [logProject, setLogProject] = useState(task.projectName ?? '')
   const [logTags, setLogTags] = useState('')
   const [logError, setLogError] = useState<string | null>(null)
-
-  const today = todayLocalIso()
+  const [logDate, setLogDate] = useState(todayLocalIso)
+  const [overflow, setOverflow] = useState<{ info: OverflowInfo; key: string } | null>(null)
 
   const isFerie = logType === 'FERIE'
+  // FERIE si misura in giornate lavorative, come nel form manuale
+  const logDuration = isFerie
+    ? Math.max(1, Math.round(logGiorni * MINUTES_PER_WORKDAY))
+    : Math.max(1, logOre * 60 + logMin)
+
+  const currentKey = overflowKey({ date: logDate, duration: logDuration, activityType: logType })
+  const pendingOverflow = overflow?.key === currentKey ? overflow : null
 
   const selectedClient = useMemo(() => {
     const n = logClient.trim().toLowerCase()
@@ -94,36 +104,46 @@ export default function TaskCard({ task, clients, projects, tags }: Props) {
     setLogOre(initOre)
     setLogMin(initMin)
     setLogGiorni(1)
+    setLogDate(todayLocalIso())
     setLogError(null)
+    setOverflow(null)
     dialogRef.current?.showModal()
   }
 
-  const handleLog = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
-    const fd = new FormData(e.currentTarget)
-    // FERIE si misura in giornate lavorative, come nel form manuale
-    const duration = isFerie
-      ? Math.max(1, Math.round(logGiorni * MINUTES_PER_WORKDAY))
-      : Math.max(1, logOre * 60 + logMin)
+  const submitLog = (choice?: OverflowChoice) => {
+    const form = logFormRef.current
+    if (!form) return
+    const fd = new FormData(form)
+    const entry = {
+      title: logTitle.trim(),
+      description: (fd.get('description') as string)?.trim() || undefined,
+      activityType: logType,
+      duration: logDuration,
+      date: logDate,
+      clientName: logClient.trim() || undefined,
+      projectName: logProject.trim() || undefined,
+      tags: logTags.trim() || undefined,
+    }
 
     setLogError(null)
     startTransition(async () => {
       try {
-        await logTaskAsEntry(task.id, {
-          title: logTitle.trim(),
-          description: (fd.get('description') as string)?.trim() || undefined,
-          activityType: logType,
-          duration,
-          date: fd.get('date') as string,
-          clientName: logClient.trim() || undefined,
-          projectName: logProject.trim() || undefined,
-          tags: logTags.trim() || undefined,
-        })
+        const result = await logTaskAsEntry(task.id, entry, choice)
+        if (!result.ok) {
+          setOverflow({ info: result.overflow, key: overflowKey(entry) })
+          return
+        }
+        setOverflow(null)
         dialogRef.current?.close()
       } catch {
         setLogError('Controlla i campi: titolo e durata sono obbligatori.')
       }
     })
+  }
+
+  const handleLog = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    submitLog()
   }
 
   const handleEdit = (e: React.FormEvent<HTMLFormElement>) => {
@@ -222,7 +242,7 @@ export default function TaskCard({ task, clients, projects, tags }: Props) {
           </button>
         </div>
 
-        <form onSubmit={handleLog} className={styles.logForm}>
+        <form ref={logFormRef} onSubmit={handleLog} className={styles.logForm}>
           {logError && <p className={styles.logError}>{logError}</p>}
 
           <div className={styles.logField}>
@@ -293,7 +313,8 @@ export default function TaskCard({ task, clients, projects, tags }: Props) {
               <input
                 name="date"
                 type="date"
-                defaultValue={today}
+                value={logDate}
+                onChange={(e) => setLogDate(e.target.value)}
                 required
                 className={styles.logInput}
               />
@@ -431,6 +452,15 @@ export default function TaskCard({ task, clients, projects, tags }: Props) {
             </details>
           )}
 
+          {pendingOverflow && (
+            <OverflowPrompt
+              info={pendingOverflow.info}
+              pending={isPending}
+              onChoose={submitLog}
+              onCancel={() => setOverflow(null)}
+            />
+          )}
+
           <div className={styles.logActions}>
             <button
               type="button"
@@ -440,7 +470,7 @@ export default function TaskCard({ task, clients, projects, tags }: Props) {
             >
               Annulla
             </button>
-            <button type="submit" className={styles.logSaveBtn} disabled={isPending}>
+            <button type="submit" className={styles.logSaveBtn} disabled={isPending || !!pendingOverflow}>
               <Play size={13} />
               {isPending ? 'Salvataggio…' : 'Registra e chiudi'}
             </button>

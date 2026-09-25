@@ -1,0 +1,83 @@
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px;
+  border: 1px solid var(--border-focus);
+  border-radius: var(--radius-sm);
+  background: var(--primary-glow);
+  animation: slideDown 0.2s ease;
+}
+
+.title {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin: 0;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.title svg {
+  color: var(--primary-hover);
+}
+
+.text {
+  margin: 0;
+  font-size: 0.8rem;
+  line-height: 1.5;
+  color: var(--text);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.choice,
+.cancel {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-family: inherit;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 8px 12px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  cursor: pointer;
+  transition: opacity 0.15s, border-color 0.15s, background 0.15s;
+}
+
+.choice {
+  background: var(--bg-surface-hover);
+  color: var(--primary-hover);
+  border-color: var(--border-focus);
+}
+
+.choice:hover:not(:disabled) {
+  background: var(--primary-glow);
+}
+
+.cancel {
+  background: transparent;
+  color: var(--text-muted);
+}
+
+.cancel:hover:not(:disabled) {
+  color: var(--text);
+}
+
+.choice:disabled,
+.cancel:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.spread {
+  margin: 0;
+  font-size: 0.72rem;
+  color: var(--text-muted);
+}

@@ -20,6 +20,9 @@ export const timeEntrySchema = z.object({
 
 export type TimeEntryInput = z.infer<typeof timeEntrySchema>
 
+/** Cosa fare delle ore oltre le 8h: assente finché l'utente non ha scelto. */
+export const overflowChoiceSchema = z.enum(['STRAORDINARIO', 'SPREAD']).optional()
+
 export const loginSchema = z.object({
   username: z.string().min(1, "L'username è obbligatorio"),
   password: z.string().min(1, 'La password è obbligatoria'),
