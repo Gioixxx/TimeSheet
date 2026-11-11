@@ -19,6 +19,7 @@ Stato del lavoro in corso. Aggiornato con `/sprint`.
 
 ### Completati
 
+- [x] **Pulizia `CLAUDE.md` (solo ConsoleClaude) e versionamento dell'installazione ConsoleClaude (2026-11-11)** — T-0001; regole in [[decisions]], debito in [[tech-debt]]
 - [x] **Ore oltre le 8h (v1.4.0, 2026-09-25)** — al salvataggio di una voce di lavoro che supera
       le 8h ordinarie si sceglie tra straordinario (voce divisa) e spostamento sui giorni
       lavorativi successivi, a cascata. Form manuale, "Compila e salva", post-it e modifica.

@@ -64,3 +64,11 @@ Ogni decisione include motivazione e alternative valutate.
 **Alternative scartate:** calcolare l'eccedenza nel client — richiederebbe di caricare le ore dei giorni successivi nella pagina e lascerebbe la regola aggirabile; dialog modale — i punti di inserimento sono già dentro `<dialog>` (modifica, post-it), da qui il pannello in linea; "registra comunque" come terza opzione — non richiesto, e l'app calcolava già l'eccedenza come straordinario a posteriori.
 **Nota:** i totali di straordinari di calendario, pagina Oggi ed export restano `totale giorno − 480` su **tutte** le voci. Con la divisione "straordinario" il totale del giorno non cambia, quindi i numeri coincidono; ma una voce `STRAORDINARIO` inserita a mano in un giorno sotto le 8h viene ancora sommata alle ore del giorno lì — incoerenza preesistente, non toccata.
 **Impatto:** `src/lib/day-overflow.ts` e `src/lib/holidays.ts` (puri; i festivi erano in `calendario/page.tsx`), `src/app/actions.ts`, `src/components/OverflowPrompt.tsx`, `TimeEntryForm.tsx`, `EditButton.tsx` (ora riparte dalla voce salvata a ogni apertura: dopo una divisione riproponeva la durata digitata), `TaskCard.tsx` (data resa controllata). Il polling email crea `Task`, non voci: escluso.
+
+### Istruzioni di progetto solo dalla regione consoleclaude; modules di claude-libs rimossi
+
+**Data:** 2026-11-11
+**Decisione:** Le istruzioni del progetto arrivano solo dalla regione `consoleclaude` di `CLAUDE.md`. La regione `claude-libs:modules` (generata da `reconcile.ps1` di claude-libs da `workspace.json` → `modules`) è stata rimossa e `modules` in `workspace.json` è ora `[]`. Stack e moduli si cambiano dalla console, non da `workspace.json`.
+**Perché:** i moduli nextjs, nextjs-patterns, style-system, iterative-dev, testing e `.claude/memory/MEMORY.md` erano importati due volte (costo a ogni turno di ogni Dot). Inoltre `@.claude/libs/CLAUDE.md` portava in contesto la memoria del repo claude-libs, estranea a TimeSheet. La regione consoleclaude non si può ridurre perché la console la sostituisce.
+**Alternative scartate:** lasciare entrambe le regioni — doppioni e memoria estranea in ogni turno. Ridurre la regione consoleclaude — non possibile, la console la rigenera.
+**Impatto:** `CLAUDE.md` (solo `@AGENTS.md` e la regione consoleclaude), `workspace.json` (`modules: []`). Task T-0001.

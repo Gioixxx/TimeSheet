@@ -72,6 +72,16 @@ solo passando la chiave esplicita (`ssh -i ~/.ssh/id_ed25519_pi5_casaos`), l'age
 
 <!-- Miglioramenti non urgenti, pulizia, refactoring cosmetici -->
 
+### Reconcile di claude-libs con `modules: []` non verificato
+**Priorità:** Bassa
+**Area:** Config / librerie
+**Data:** 2026-11-11
+**Introdotto da:** T-0001 — rimozione della regione `claude-libs:modules` da `CLAUDE.md` e `modules: []` in `workspace.json`
+**Descrizione:** Non è verificato cosa faccia un futuro `reconcile.ps1` di claude-libs con `modules: []`: potrebbe reinserire la regione o `@.claude/libs/CLAUDE.md`. Non è verificato nemmeno se altri script leggono `modules` da `workspace.json`.
+**Perché rimandato:** Il problema emerge solo al prossimo reconcile; non blocca il lavoro corrente.
+**Impatto attuale:** Rischio di tornare ai doppioni (costo a ogni turno) e di memoria claude-libs in contesto.
+**Risoluzione suggerita:** Al prossimo reconcile controllare che `CLAUDE.md` contenga solo `@AGENTS.md` e la regione consoleclaude; controllare gli script che leggono `workspace.json`.
+
 ---
 
 ## Archiviato
