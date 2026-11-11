@@ -1,0 +1,36 @@
+.switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 99px;
+  padding: 3px;
+}
+
+.option,
+.active {
+  display: inline-flex;
+  align-items: center;
+  min-height: 28px;
+  font-size: 0.78rem;
+  font-weight: 500;
+  padding: 4px 14px;
+  border-radius: 99px;
+}
+
+.option {
+  color: var(--text-muted);
+  transition: color 0.15s, background 0.15s;
+}
+
+.option:hover {
+  color: var(--text);
+  background: var(--bg-surface-hover);
+}
+
+.active {
+  color: #fff;
+  background: var(--primary);
+  font-weight: 600;
+}

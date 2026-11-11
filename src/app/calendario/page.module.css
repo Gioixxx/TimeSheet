@@ -111,6 +111,11 @@
   margin-left: 4px;
 }
 
+/* Interruttore Griglia | Riepilogo */
+.viewSwitch {
+  margin-bottom: 12px;
+}
+
 /* Calendar */
 .calendarWrap {
   background: var(--bg-surface);

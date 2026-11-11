@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma'
 import Link from 'next/link'
 import { ChevronLeft, ChevronRight, Bell } from 'lucide-react'
 import Navbar from '@/components/Navbar'
+import CalendarViewSwitch from '@/components/CalendarViewSwitch'
 import { getOccurrencesInRange } from '@/lib/reminder-recurrence'
 import { italianHolidays } from '@/lib/holidays'
 import { isAuthEnabled } from '@/lib/session'
@@ -247,6 +248,10 @@ export default async function CalendarioPage({
             <span className={styles.statUnit}>h</span>
           </p>
         </div>
+      </div>
+
+      <div className={styles.viewSwitch}>
+        <CalendarViewSwitch active="griglia" month={`${year}-${String(month).padStart(2, '0')}`} />
       </div>
 
       <div className={styles.calendarWrap}>
