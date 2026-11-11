@@ -12,11 +12,5 @@
                      "libraryRouter":  true,
                      "enforcementHooks":  true
                  },
-    "modules":  [
-                    "stacks/nextjs.md",
-                    "snippets/nextjs-patterns.md",
-                    "stacks/style-system.md",
-                    "workflows/iterative-dev.md",
-                    "workflows/testing.md"
-                ]
+    "modules":  []
 }
