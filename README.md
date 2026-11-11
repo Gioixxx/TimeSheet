@@ -21,7 +21,7 @@
 - **Registrazione rapida** — form con cliente, progetto, tag, tipo attività e durata
 - **Input in linguaggio naturale (AI)** — scrivi `"2 ore di supporto al cliente Rossi ieri"` e l'AI compila il form automaticamente
 - **Task board** — kanban leggero per gestire attività in corso
-- **Vista calendario** — riepilogo mensile delle ore per giorno
+- **Vista calendario** — griglia mensile delle ore per giorno; **riepilogo mensile** con tutte le voci del mese raggruppate per giorno, totali e confronto con le ore attese
 - **Ricerca globale** — barra di ricerca con dropdown live su tutte le voci
 - **Filtri** — per mese, tipo attività, cliente
 - **Export CSV** — esporta il timesheet di qualsiasi mese con un click
@@ -98,7 +98,7 @@ timesheet/
 │   │   ├── api/
 │   │   │   ├── export/     # Endpoint CSV export
 │   │   │   └── search/     # Endpoint ricerca globale
-│   │   ├── calendario/     # Vista calendario mensile
+│   │   ├── calendario/     # Calendario mensile (griglia) e riepilogo mensile
 │   │   ├── oggi/           # Vista giornaliera
 │   │   └── page.tsx        # Dashboard principale
 │   ├── components/         # Componenti React
@@ -148,7 +148,7 @@ Vedi [CONTRIBUTING.md](CONTRIBUTING.md).
 - **Quick entry form** — client, project, tags, activity type, and duration
 - **Natural language input (AI)** — type `"2 hours of support for client Rossi yesterday"` and the AI fills in the form automatically
 - **Task board** — lightweight kanban for managing ongoing work
-- **Calendar view** — monthly overview of hours per day
+- **Calendar view** — monthly grid of hours per day; **monthly summary** with all the month's entries grouped by day, totals and comparison with expected hours
 - **Global search** — live dropdown search across all entries
 - **Filters** — by month, activity type, client
 - **CSV export** — export any month's timesheet with one click

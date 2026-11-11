@@ -68,6 +68,46 @@ solo passando la chiave esplicita (`ssh -i ~/.ssh/id_ed25519_pi5_casaos`), l'age
 **Impatto attuale:** Blocca l'uso di `deploy_app` per sincronizzare config future — ogni modifica a `docker-compose.yml`/`.env` sul Pi richiede editing manuale **seguito da una vera ricreazione del container**, non un semplice restart.
 **Risoluzione suggerita:** Verificare proprietario/permessi di `/DATA/AppData/timesheet` sul Pi e allinearli all'utente SSH usato da `pi-deploy`.
 
+### Contrasto della voce attiva di CalendarViewSwitch
+**Priorità:** Media
+**Area:** UI / a11y
+**Data:** 2026-11-11
+**Introdotto da:** T-0002 (Revisore)
+**Descrizione:** `.active` usa testo `#fff` su `--primary`: circa 4,47:1 in dark-midnight (default), sotto 4,5:1 in dark-sunset (~2,1:1), dark-forest (~2,5:1), dark-ocean (~2,8:1). Testo di 0,78rem. Calcolo a mano, non misurato.
+**Risoluzione suggerita:** `color: var(--primary-hover); background: var(--primary-glow); border: 1px solid var(--border-focus)`, come `.addLink`; oppure token `--on-primary` per tema (lavoro più ampio).
+
+### Regole mensili duplicate tra calendario e riepilogo
+**Priorità:** Media
+**Area:** `calendario/page.tsx` (righe 125-168, 181-197), `src/lib/month-summary.ts`, `MonthNav`
+**Data:** 2026-11-11
+**Introdotto da:** T-0002
+**Descrizione:** Stesse regole in due punti, nessun test che leghi calendario e riepilogo; navigazione mese copiata in `MonthNav`.
+**Risoluzione suggerita:** Migrare il calendario a `month-summary.ts` e `MonthNav`, con test di parità su un mese reale prima di togliere il codice vecchio.
+
+### calendario/page.tsx non valida ?month e calcola "oggi" in UTC
+**Priorità:** Media
+**Area:** `src/app/calendario/page.tsx` (`parseInt` su `month`, `getUTC*` righe 93, 169, 177)
+**Data:** 2026-11-11
+**Introdotto da:** T-0002 (lettura del codice, non provato a runtime sul calendario)
+**Descrizione:** `?month=abc` può rompere la pagina; "oggi" in UTC invece del fuso locale della convenzione `dates.ts`.
+**Risoluzione suggerita:** Usare `parseMonthParam` e `todayLocalIso()` anche nel calendario, insieme alla migrazione sopra.
+
+### Possibile discrepanza riepilogo/calendario tra 00:00 e 02:00 locali
+**Priorità:** Media
+**Area:** evidenziazione di "oggi" (calendario UTC, riepilogo `todayLocalIso`)
+**Data:** 2026-11-11
+**Introdotto da:** T-0002
+**Descrizione:** Nelle prime due ore del giorno locale le due schermate possono evidenziare giorni diversi. Non tocca i totali. Il Tester segnala anche che il rischio sta nel chiamante (query Prisma e `todayLocalIso`), non coperto da test.
+**Risoluzione suggerita:** Unificare il calcolo di "oggi" con il punto sopra; aggiungere un test di confine sul chiamante.
+
+### Navbar sfora a 390 px (pre-esistente, aggravato dalla pagina nuova)
+**Priorità:** Media
+**Area:** `src/components/Navbar.module.css` (nessuna media query)
+**Data:** 2026-11-11
+**Introdotto da:** anteriore a T-0002
+**Descrizione:** `scrollWidth` 647 sul riepilogo, 712 su `/calendario`, 575 su `/oggi`: scorrimento orizzontale già oggi. Il riepilogo non aggiunge tab.
+**Risoluzione suggerita:** Sotto i 500 px tab a sola icona con `aria-label`, e `flex-wrap` sull'header.
+
 ## Bassa priorità
 
 <!-- Miglioramenti non urgenti, pulizia, refactoring cosmetici -->
@@ -81,6 +121,50 @@ solo passando la chiave esplicita (`ssh -i ~/.ssh/id_ed25519_pi5_casaos`), l'age
 **Perché rimandato:** Il problema emerge solo al prossimo reconcile; non blocca il lavoro corrente.
 **Impatto attuale:** Rischio di tornare ai doppioni (costo a ogni turno) e di memoria claude-libs in contesto.
 **Risoluzione suggerita:** Al prossimo reconcile controllare che `CLAUDE.md` contenga solo `@AGENTS.md` e la regione consoleclaude; controllare gli script che leggono `workspace.json`.
+
+### Ferie: card Assenze e ore attese usano metriche diverse
+**Priorità:** Bassa
+**Area:** `src/app/calendario/riepilogo/page.tsx` (righe 70, 93, 124)
+**Data:** 2026-11-11
+**Introdotto da:** T-0002 (Revisore, 💡)
+**Descrizione:** "Ferie" nella card Assenze usa `byType.FERIE` (tutte le ferie, anche weekend o oltre 8h); "attese − Xgg ferie" usa `ferieDays` (solo feriali, max 8h). Con dati normali coincidono.
+**Risoluzione suggerita:** Mostrare `ferieDays` nella card, oppure documentare la differenza.
+
+### Duplicati di formatDuration e nomi di mesi in 7 file
+**Priorità:** Bassa
+**Area:** `calendario/page.tsx`, `[date]/page.tsx`, `oggi/page.tsx`, `Navbar.tsx`, `SearchBar.tsx`, `TimeEntryList.tsx`, `export-xlsx.ts`
+**Data:** 2026-11-11
+**Introdotto da:** anteriore a T-0002; il codice nuovo usa `src/lib/format-duration.ts`
+**Risoluzione suggerita:** Unificare in un task di pulizia, dopo i test di parità.
+
+### Lint con 3 errori e 2 warning pre-esistenti
+**Priorità:** Bassa
+**Area:** `cache-audit.js` (no-require-imports ×3), `EditButton.tsx` e `TimeEntryForm.tsx` (react-hooks/incompatible-library)
+**Data:** 2026-11-11
+**Introdotto da:** anteriore a T-0002
+**Risoluzione suggerita:** Sistemare in un task dedicato.
+
+### Vitest ^4 perché Vitest 5 conflitta con @types/node ^20
+**Priorità:** Bassa
+**Area:** `package.json` (devDependencies)
+**Data:** 2026-11-11
+**Introdotto da:** T-0002
+**Descrizione:** Vitest 5 richiede `@types/node ^22 || >=24`; il progetto è su `^20`, quindi `npm install` fallisce con ERESOLVE.
+**Risoluzione suggerita:** Alzare `@types/node` quando si fa l'upgrade Node, poi passare a Vitest 5.
+
+### Ore di "Aggiungi voce" nel mese vuoto puntano a /oggi senza data
+**Priorità:** Bassa
+**Area:** `src/app/calendario/riepilogo/page.tsx` (riga 166)
+**Data:** 2026-11-11
+**Introdotto da:** T-0002 (Revisore, 💡)
+**Risoluzione suggerita:** `/oggi?date=<primo giorno lavorativo del mese>`, oppure lasciare così per scelta.
+
+### Minori del Revisore (UI e query)
+**Priorità:** Bassa
+**Area:** `riepilogo/page.tsx` (riga 108, aria-valuetext mancante sopra il 100%; riga 55, include client/project/tags non ristretto con select); `MonthSummaryDay.tsx` (righe 147-151, link "Aggiungi" senza contesto srOnly)
+**Data:** 2026-11-11
+**Introdotto da:** T-0002
+**Risoluzione suggerita:** Aggiungere `aria-valuetext`, restringere la query, aggiungere srOnly con la data.
 
 ---
 

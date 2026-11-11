@@ -72,3 +72,17 @@ Ogni decisione include motivazione e alternative valutate.
 **Perché:** i moduli nextjs, nextjs-patterns, style-system, iterative-dev, testing e `.claude/memory/MEMORY.md` erano importati due volte (costo a ogni turno di ogni Dot). Inoltre `@.claude/libs/CLAUDE.md` portava in contesto la memoria del repo claude-libs, estranea a TimeSheet. La regione consoleclaude non si può ridurre perché la console la sostituisce.
 **Alternative scartate:** lasciare entrambe le regioni — doppioni e memoria estranea in ogni turno. Ridurre la regione consoleclaude — non possibile, la console la rigenera.
 **Impatto:** `CLAUDE.md` (solo `@AGENTS.md` e la regione consoleclaude), `workspace.json` (`modules: []`). Task T-0001.
+
+### Vista riepilogo mensile come pagina separata, senza tab in Navbar
+**Data:** 2026-11-11
+**Decisione:** La vista per giorno del mese è la pagina `/calendario/riepilogo?month=YYYY-MM`. Si raggiunge solo dall'interruttore Griglia/Riepilogo dentro `/calendario`; nessuna tab in Navbar (scelta dell'utente). La modifica delle voci resta nel dettaglio giorno (`/calendario/[date]`), con link `?highlight=<id>&from=riepilogo`.
+**Perché:** Route dentro `/calendario` così `revalidatePath('/calendario', 'layout')` delle server action copre già la pagina (7 punti in `actions.ts`); server component senza JS client; URL condivisibile. Modifica inline no in v1: evita decine di form idratati e la duplicazione di OverflowPrompt.
+**Alternative scartate:** `?view=riepilogo` dentro `calendario/page.tsx` (file già lungo, due layout nello stesso componente); route `/riepilogo` (servirebbe `revalidatePath` in 7 punti); tab in Navbar (scelta utente).
+**Impatto:** `src/app/calendario/riepilogo/`, `src/components/CalendarViewSwitch.tsx`, `src/components/MonthNav.tsx`, `src/components/MonthSummaryDay.tsx`, `src/app/calendario/[date]/page.tsx`.
+
+### Regole dei totali mensili replicate in src/lib/month-summary.ts
+**Data:** 2026-11-11
+**Decisione:** Le regole di `calendario/page.tsx` (righe 125-168) sono replicate in funzioni pure in `src/lib/month-summary.ts`: ore lavorate = tutte le voci tranne FERIE (PERMESSO incluso); ferie solo su giorni lavorativi, max 480 min/giorno, riducono le attese; straordinario = somma di max(0, totale giorno − 480) con le ferie nel totale; giorni lavorativi esclusi sabato, domenica e festivi. Il calendario non è stato migrato.
+**Perché:** Funzioni pure testabili con Vitest; la parità dei numeri col calendario è il punto in cui le regole si rompono in silenzio. Migrare il calendario è un task a parte, quando la parità è coperta.
+**Alternative scartate:** migrare subito il calendario (cambia una schermata esistente nello stesso task); nessun test automatico (regola delle 8h e ferie troppo delicata).
+**Impatto:** Qualunque modifica a una regola va fatta in entrambi i punti finché il calendario non migra.

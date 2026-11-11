@@ -39,6 +39,17 @@ Apri una [Issue](https://github.com/Gioix/timesheet/issues/new) con il prefisso 
 
 ---
 
+## Test
+
+```bash
+npm test
+```
+
+Vitest esegue una passata (`vitest run`) sui file `src/**/*.test.ts`; la configurazione è in
+`vitest.config.mts`. I test stanno accanto al codice che verificano.
+
+---
+
 ## Convenzioni di commit
 
 Usa il formato [Conventional Commits](https://www.conventionalcommits.org/):

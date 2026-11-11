@@ -1,0 +1,66 @@
+.monthNav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+}
+
+.monthTitle {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  min-width: 180px;
+  justify-content: center;
+}
+
+.monthName {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.monthYear {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+
+.todayLink {
+  font-size: 0.72rem;
+  color: var(--primary);
+  border: 1px solid rgba(99, 102, 241, 0.3);
+  border-radius: 99px;
+  padding: 1px 7px;
+  transition: background 0.15s;
+}
+
+.todayLink:hover {
+  background: var(--primary-glow);
+}
+
+.navBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text-muted);
+  padding: 6px;
+  transition: color 0.15s, border-color 0.15s;
+}
+
+.navBtn:hover {
+  color: var(--text);
+  border-color: rgba(255, 255, 255, 0.16);
+}
+
+/* Sotto i 500px il titolo non deve imporre una larghezza minima che spinga fuori dallo schermo. */
+@media (max-width: 500px) {
+  .monthNav {
+    gap: 8px;
+  }
+
+  .monthTitle {
+    min-width: 0;
+  }
+}
