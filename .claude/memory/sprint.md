@@ -16,6 +16,7 @@ Stato del lavoro in corso. Aggiornato con `/sprint`.
 - [ ] Watchtower non è mai stato attivo sul Pi — i deploy vanno spinti a mano con `force_update` finché non si configura
 - [ ] `deploy_app` "Permission denied" su `/DATA/AppData/timesheet` — **causa trovata il 2026-09-15** (dir `root:root`, utente SSH `gioixxx` uid 1000, SFTP senza sudo). Fix noto e a un comando: `sudo chown -R gioixxx:gioixxx /DATA/AppData/timesheet`. Non applicato, vedi [[tech-debt]]
 - [ ] Verificare se iAPi funziona per il parsing NL nel form (`TimeEntryForm`, sostituito a Gemini) — in attesa che l'utente testi manualmente e riporti l'esito
+- [ ] T-0002 Vista riepilogo mensile (aperto 2026-11-11): codice scritto, Vitest in `npm test` (112 test verdi). Da fare a mano: scroll all'hash e highlight dopo navigazione client, modifica e riapertura del riepilogo, AUTH_ENABLED=true, tastiera, zoom 200%, tema dark-sunset, parità su dati reali, Electron e Docker. Sviluppatore: tsc e build verdi; Tester: tsc e build non rieseguiti.
 
 ### Completati
 

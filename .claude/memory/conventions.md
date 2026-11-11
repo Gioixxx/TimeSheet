@@ -40,6 +40,16 @@ Caricate da Claude durante review e generazione di codice.
 **Perché diverge dalle libs globali:** nessun pattern generico copre "stesso codebase, un target ha un host process che fa polling (Electron) e l'altro è headless (container)".
 **Vedi anche:** [[decisions]] per la scelta in-process vs cron sidecar, [[tech-debt]] per il bug che ha fatto scoprire il gap.
 
+### Test unitari con Vitest, co-locati
+**Contesto:** Logica pura di `src/lib/` (calcoli, parsing, date).
+**Regola:** `npm test` esegue `vitest run`. Test in `src/**/*.test.ts` accanto al file testato, nomi `dovrebbe … se …`, costanti in cima al file. Configurazione in `vitest.config.mts` (alias `@` → `src`, ambiente node). Il file è `.mts` perché il package non è `type: module`.
+**Perché diverge dalle libs globali:** Il progetto non aveva test; la regola generica di `testing.md` indica Vitest per Next.js, ma qui è introdotto solo con T-0002.
+
+### Pagine di vista mensile: mese da query validata, oggi in fuso locale
+**Contesto:** Qualunque pagina con `?month=YYYY-MM`.
+**Regola:** Leggere il mese con `parseMonthParam` (regex `^\d{4}-(0[1-9]|1[0-2])$`, anno 1970-2100), fallback al mese corrente; "oggi" con `todayLocalIso()`. Il calendario non ancora si adegua (vedi tech-debt).
+**Perché diverge dalle libs globali:** Regola specifica di TimeSheet, emersa dal confronto tra calendario e riepilogo.
+
 ## Vincoli noti
 
 ### Questa versione di Next.js usa `proxy.ts`, non `middleware.ts`
