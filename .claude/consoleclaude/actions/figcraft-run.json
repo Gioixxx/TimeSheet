@@ -1,0 +1,37 @@
+{
+  "dominio": "figcraft",
+  "richiede": [
+    "programma:figcraft"
+  ],
+  "id": "figcraft-run",
+  "titolo": "Esegue uno script di comandi FigCraft",
+  "quando": "Per applicare a un documento una sequenza fissa di comandi scritta in un file JSON dentro il progetto, senza sessione interattiva.",
+  "rischio": "scrittura",
+  "comando": [
+    "figcraft",
+    "run",
+    "{script}",
+    "--in={file}",
+    "--out={out}",
+    "--automation-read-root",
+    "{progetto}",
+    "--automation-write-root",
+    "{progetto}"
+  ],
+  "timeoutS": 600,
+  "parametri": {
+    "script": {
+      "tipo": "percorso",
+      "esiste": true
+    },
+    "file": {
+      "tipo": "percorso",
+      "esiste": true,
+      "obbligatorio": false
+    },
+    "out": {
+      "tipo": "percorso",
+      "obbligatorio": false
+    }
+  }
+}

@@ -1,0 +1,39 @@
+{
+  "dominio": "figcraft",
+  "richiede": [
+    "programma:figcraft"
+  ],
+  "id": "figcraft-render",
+  "titolo": "Render PNG di un documento FigCraft",
+  "quando": "Per vedere com'è un documento: un PNG della pagina da aprire con Read.",
+  "rischio": "scrittura",
+  "comando": [
+    "figcraft",
+    "render",
+    "{file}",
+    "-o",
+    "{out}",
+    "--scale={scala}",
+    "--automation-read-root",
+    "{progetto}",
+    "--automation-write-root",
+    "{progetto}"
+  ],
+  "timeoutS": 300,
+  "parametri": {
+    "file": {
+      "tipo": "percorso",
+      "esiste": true
+    },
+    "out": {
+      "tipo": "percorso"
+    },
+    "scala": {
+      "tipo": "intero",
+      "min": 1,
+      "max": 4,
+      "obbligatorio": false,
+      "default": 1
+    }
+  }
+}

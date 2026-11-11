@@ -1,0 +1,30 @@
+{
+  "dominio": "figcraft",
+  "richiede": [
+    "programma:figcraft"
+  ],
+  "id": "figcraft-convert",
+  "titolo": "Converte un documento tra formati",
+  "quando": "Per convertire un file tra formati di FigCraft (.figcraft, .json, .svg, immagini).",
+  "rischio": "scrittura",
+  "comando": [
+    "figcraft",
+    "convert",
+    "{da}",
+    "{a}",
+    "--automation-read-root",
+    "{progetto}",
+    "--automation-write-root",
+    "{progetto}"
+  ],
+  "timeoutS": 300,
+  "parametri": {
+    "da": {
+      "tipo": "percorso",
+      "esiste": true
+    },
+    "a": {
+      "tipo": "percorso"
+    }
+  }
+}

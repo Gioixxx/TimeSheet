@@ -1,0 +1,13 @@
+{
+  "id": "lint",
+  "dominio": "test",
+  "titolo": "Controllo statico (lint)",
+  "quando": "Per un controllo veloce di stile ed errori, prima dei test.",
+  "rischio": "lettura",
+  "comando": [
+    "npm",
+    "run",
+    "lint"
+  ],
+  "timeoutS": 300
+}

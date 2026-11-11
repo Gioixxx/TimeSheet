@@ -1,0 +1,59 @@
+{
+  "dominio": "figcraft",
+  "richiede": [
+    "programma:figcraft"
+  ],
+  "id": "figcraft-export",
+  "titolo": "Esporta un documento FigCraft",
+  "quando": "Per esportare un file FigCraft o SVG in PNG, JPG, SVG, WebP o PDF (un frame o l'intero documento), senza accendere l'MCP.",
+  "rischio": "scrittura",
+  "comando": [
+    "figcraft",
+    "export",
+    "{file}",
+    "-o",
+    "{out}",
+    "--format={formato}",
+    "--scale={scala}",
+    "--node={nodo}",
+    "--automation-read-root",
+    "{progetto}",
+    "--automation-write-root",
+    "{progetto}"
+  ],
+  "timeoutS": 300,
+  "parametri": {
+    "file": {
+      "tipo": "percorso",
+      "esiste": true
+    },
+    "out": {
+      "tipo": "percorso"
+    },
+    "formato": {
+      "tipo": "enum",
+      "valori": [
+        "png",
+        "jpg",
+        "svg",
+        "webp",
+        "pdf"
+      ],
+      "obbligatorio": false,
+      "default": "png"
+    },
+    "scala": {
+      "tipo": "intero",
+      "min": 1,
+      "max": 4,
+      "obbligatorio": false,
+      "default": 1
+    },
+    "nodo": {
+      "tipo": "stringa",
+      "pattern": "[A-Za-z0-9 _.:/-]{1,60}",
+      "max": 60,
+      "obbligatorio": false
+    }
+  }
+}

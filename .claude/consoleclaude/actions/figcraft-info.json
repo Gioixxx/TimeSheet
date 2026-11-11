@@ -1,0 +1,24 @@
+{
+  "dominio": "figcraft",
+  "richiede": [
+    "programma:figcraft"
+  ],
+  "id": "figcraft-info",
+  "titolo": "Contenuto di un documento FigCraft",
+  "quando": "Per vedere pagine, frame e nodi di un file FigCraft, SVG o immagine prima di esportarlo.",
+  "rischio": "lettura",
+  "comando": [
+    "figcraft",
+    "info",
+    "{file}",
+    "--automation-read-root",
+    "{progetto}"
+  ],
+  "timeoutS": 120,
+  "parametri": {
+    "file": {
+      "tipo": "percorso",
+      "esiste": true
+    }
+  }
+}

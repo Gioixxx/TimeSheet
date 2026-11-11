@@ -1,0 +1,12 @@
+{
+  "id": "test",
+  "dominio": "test",
+  "titolo": "Test del progetto",
+  "quando": "Dopo una modifica, per sapere se i test passano; una volta alla fine, prima di dire fatto.",
+  "rischio": "lettura",
+  "comando": [
+    "npm",
+    "test"
+  ],
+  "timeoutS": 900
+}

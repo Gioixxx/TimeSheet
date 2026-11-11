@@ -1,0 +1,13 @@
+{
+  "id": "build",
+  "dominio": "build",
+  "titolo": "Build del progetto",
+  "quando": "Per sapere se il progetto compila, o per produrre gli artefatti di build.",
+  "rischio": "scrittura",
+  "comando": [
+    "npm",
+    "run",
+    "build"
+  ],
+  "timeoutS": 900
+}

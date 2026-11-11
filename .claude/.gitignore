@@ -1,0 +1,9 @@
+# consoleclaude:start (gestita da ConsoleClaude: non modificare qui)
+/memory-sync.log
+/context-audit.jsonl
+/memory/session-log.md
+/memory/*.tmp
+/local-queue.md
+/local-queue.json
+/tasks/*.tmp
+# consoleclaude:end
