@@ -3,7 +3,7 @@
 Tutte le modifiche rilevanti del progetto. Formato basato su
 [Keep a Changelog](https://keepachangelog.com/it/1.1.0/), versioni secondo [SemVer](https://semver.org/lang/it/).
 
-## [Non rilasciato]
+## [1.5.0] - 2026-11-11
 
 ### Aggiunto
 - **Riepilogo mensile:** nuova pagina `/calendario/riepilogo?month=AAAA-MM` con tutte le voci del
@@ -53,6 +53,7 @@ Tutte le modifiche rilevanti del progetto. Formato basato su
 - Pannello attività allineato al form di inserimento manuale e correzione dei 20 bug emersi
   dall'audit statico.
 
+[1.5.0]: https://github.com/Gioixxx/TimeSheet/compare/v1.4.0...v1.5.0
 [1.4.0]: https://github.com/Gioixxx/TimeSheet/compare/v1.3.1...v1.4.0
 [1.3.1]: https://github.com/Gioixxx/TimeSheet/compare/v1.3.0...v1.3.1
 [1.3.0]: https://github.com/Gioixxx/TimeSheet/compare/v1.2.0...v1.3.0
