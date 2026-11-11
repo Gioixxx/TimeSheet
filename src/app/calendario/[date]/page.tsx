@@ -44,8 +44,9 @@ export default async function CalendarioGiornoPage({
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>
 }) {
   const { date } = await params
-  const { highlight } = await searchParams
+  const { highlight, from } = await searchParams
   const highlightId = typeof highlight === 'string' ? highlight : undefined
+  const fromRiepilogo = from === 'riepilogo'
 
   // Validate YYYY-MM-DD format
   if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) notFound()
@@ -87,9 +88,12 @@ export default async function CalendarioGiornoPage({
       <Navbar showLogout={isAuthEnabled()} />
 
       <div className={styles.header}>
-        <Link href={`/calendario?month=${monthParam}`} className={styles.backLink}>
+        <Link
+          href={`${fromRiepilogo ? '/calendario/riepilogo' : '/calendario'}?month=${monthParam}`}
+          className={styles.backLink}
+        >
           <ChevronLeft size={14} />
-          Calendario
+          {fromRiepilogo ? 'Riepilogo' : 'Calendario'}
         </Link>
         <h1 className={styles.dateTitle}>{dateLabel}</h1>
         <Link href={`/oggi?date=${date}`} className={styles.addLink}>
