@@ -3,6 +3,16 @@
 Tutte le modifiche rilevanti del progetto. Formato basato su
 [Keep a Changelog](https://keepachangelog.com/it/1.1.0/), versioni secondo [SemVer](https://semver.org/lang/it/).
 
+## [Non rilasciato]
+
+### Aggiunto
+- **Riepilogo mensile:** nuova pagina `/calendario/riepilogo?month=AAAA-MM` con tutte le voci del
+  mese raggruppate per giorno, totali (ore lavorate, ore attese, avanzamento, straordinario,
+  assenze, giorni senza voci) e ripartizione per tipo di attività. Ogni voce apre il suo giorno
+  con la voce evidenziata, dove si modifica. I totali seguono le regole del calendario.
+- **Calendario:** interruttore **Griglia | Riepilogo** per passare da una vista all'altra
+  mantenendo il mese. Dal giorno aperto dal riepilogo, il link di ritorno riporta al riepilogo.
+
 ## [1.4.0] - 2026-09-25
 
 ### Aggiunto
